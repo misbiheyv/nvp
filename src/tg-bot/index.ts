@@ -1,15 +1,21 @@
 import { Telegraf } from 'telegraf';
+import 'dotenv/config';
 
-const bot = new Telegraf('5909365320:AAEVTZZBhIcYNuevrBpExKS5S7YXJ0eeM2k');
+if (process.env.TELEGRAM_TOKEN == null) {
+	throw Error('TELEGRAM_TOKEN was not found');
+}
+
+const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
 bot.start((ctx) => ctx.reply('Welcome'));
 
 export { bot };
 
 export default function run() {
-    try {
-        bot.launch();
-    } catch(err) {
-        console.log(err)
-    }
+	try {
+		bot.launch();
+
+	} catch (err) {
+		console.error(err);
+	}
 }
