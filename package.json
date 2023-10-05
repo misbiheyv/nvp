@@ -29,6 +29,7 @@
     "email": "mishagorkovenko1103@gmail.com"
   },
   "dependencies": {
+    "cron": "^2.4.3",
     "dotenv": "^16.3.1",
     "telegraf": "^4.12.2",
     "vk-io": "^4.8.1"

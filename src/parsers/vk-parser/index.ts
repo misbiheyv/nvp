@@ -1,12 +1,12 @@
 import VkParser from './vk-parser';
-import { ReleaseTypes, releaseTypesMap, typesSeparator, normalizeList } from './helpers';
+import { ReleaseTypes, releaseSegmentsMap, segmentsSeparator, normalizeList } from './helpers';
 
 export {
 
 	VkParser,
 	ReleaseTypes,
-	releaseTypesMap,
-	typesSeparator,
+	releaseSegmentsMap,
+	segmentsSeparator,
 	normalizeList
 
 };

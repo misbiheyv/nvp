@@ -1,4 +1,6 @@
 import { Telegraf } from 'telegraf';
+import { onBotStart } from '../scheduler';
+import { stringifiedCommands } from '../helpers';
 import 'dotenv/config';
 
 if (process.env.TELEGRAM_TOKEN == null) {
@@ -7,7 +9,10 @@ if (process.env.TELEGRAM_TOKEN == null) {
 
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-bot.start((ctx) => ctx.reply('Welcome'));
+bot.start((ctx) => {
+	ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
+	onBotStart(ctx);
+});
 
 export { bot };
 
@@ -19,3 +24,6 @@ export default function run() {
 		console.error(err);
 	}
 }
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));

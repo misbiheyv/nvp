@@ -1,6 +1,6 @@
 import { getClosestThursdayBoundaries } from '../../helpers';
 import { FilteredVkApiRequester, VkApiRequester } from '../../requester';
-import { ReleaseTypes, releaseTypesMap } from './helpers';
+import { ReleaseTypes, releaseSegmentsMap } from './helpers';
 
 export default class VkParser {
 	getClosestReleases(date: Date = new Date()): Promise<string[]> {
@@ -19,7 +19,7 @@ export default class VkParser {
 
 	getClosestFilteredReleases(type: ReleaseTypes, date: Date = new Date()): Promise<string[]> {
 		const { startBoundary, endBoundary } = getClosestThursdayBoundaries(date);
-		const identifier = releaseTypesMap.get(type);
+		const identifier = releaseSegmentsMap.get(type);
 
 		try {
 			if (identifier == null) {

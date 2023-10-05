@@ -7,9 +7,9 @@ export enum ReleaseTypes {
 }
 /* eslint-enable no-unused-vars */
 
-export const typesSeparator = '';
+export const segmentsSeparator = '\n';
 
-export const releaseTypesMap = new Map([
+export const releaseSegmentsMap = new Map([
 	[ReleaseTypes.RU_ALBUMS, '🎧 СНГ альбомы'],
 	[ReleaseTypes.EN_ALBUMS, '🎧 Иностранные альбомы'],
 	[ReleaseTypes.RU_SINGLES, '🎧 СНГ треки / макси синглы'],

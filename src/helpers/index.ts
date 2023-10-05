@@ -28,3 +28,16 @@ export function getClosestThursdayBoundaries(date = new Date(), offsetHours = 0)
 
   return { startBoundary, endBoundary };
 }
+
+export const commands = new Map([
+  ['news', 'посмотреть все новинки'],
+  ['ru_albums', 'посмотреть только русские альбомы'],
+  ['en_albums', 'посмотреть только зарубежные альбомы'],
+  ['ru_singles', 'посмотреть только русские синглы'],
+  ['en_singles', 'посмотреть только зарубежные синглы'],
+  ['help', 'узнать список команд'],
+  ['start', 'запустить бота'],
+  ['ping', 'проверить соединение']
+]);
+
+export const stringifiedCommands = [...commands.entries()].reduce((acc, [command, desc]) => `${acc}/${command} - ${desc}\n`, '');

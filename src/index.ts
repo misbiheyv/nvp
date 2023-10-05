@@ -1,21 +1,29 @@
 import 'dotenv/config';
-import run, { bot } from './tg-bot';
 import { VkParser, ReleaseTypes } from './parsers/vk-parser';
 import { normalizeList } from './parsers/vk-parser';
+import { commands, stringifiedCommands } from './helpers';
+import { TgBot } from './tg-bot/tg-bot';
 
-bot.command('news', async (ctx) => {
-  const res = normalizeList(await new VkParser().getClosestReleases());
+const bot = new TgBot()
+  .onStart((ctx) => ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`))
 
-  if (res == null || res === '') {
-    ctx.reply('Oops... Something was wrong');
-  }
+  .command('news', async (ctx) => {
+    const res = normalizeList(await new VkParser().getClosestReleases());
 
-  ctx.reply(res);
-});
+    if (res == null || res === '') {
+      ctx.reply('Oops... Something was wrong');
+    }
 
-bot.command('ping', (ctx) => {
-  ctx.reply('pong');
-});
+    ctx.reply(res);
+  }, commands.get('news'))
+
+  .command('help', (ctx) => {
+    ctx.reply(`Список команд:\n\n${stringifiedCommands}`);
+  }, commands.get('help'))
+
+  .command('ping', (ctx) => {
+    ctx.reply('pong');
+  }, commands.get('ping'));
 
 for (const type of Object.keys(ReleaseTypes)) {
   if (Number(type) >= 0) {
@@ -30,7 +38,7 @@ for (const type of Object.keys(ReleaseTypes)) {
     }
 
     ctx.reply(res);
-  });
+  }, commands.get(type.toLowerCase()));
 }
 
-run();
+bot.run();
