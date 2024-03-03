@@ -1,29 +1,53 @@
-import { Telegraf } from 'telegraf';
-import { onBotStart } from '../scheduler';
-import { stringifiedCommands } from '../helpers';
 import 'dotenv/config';
+import { MiddlewareFn, Telegraf } from 'telegraf';
+import type { BotCommand } from 'telegraf/typings/core/types/typegram';
 
-if (process.env.TELEGRAM_TOKEN == null) {
-	throw Error('TELEGRAM_TOKEN was not found');
-}
+export default class TgBot {
 
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+	protected bot: Telegraf;
 
-bot.start((ctx) => {
-	ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
-	onBotStart(ctx);
-});
+	protected commands: Map<string, {cb: MiddlewareFn<any>, description?: string}> = new Map();
 
-export { bot };
+	constructor(token?: string) {
+		const tok = token ?? process.env.TELEGRAM_TOKEN;
 
-export default function run() {
-	try {
-		bot.launch();
+		if (tok == null) {
+			throw Error('TELEGRAM_TOKEN was not found');
+		}
 
-	} catch (err) {
-		console.error(err);
+		this.bot = new Telegraf(tok);
+	}
+
+	start(): void {
+		try {
+			const descriptions: BotCommand[] = [];
+
+			for (const [command, {cb, description}] of this.commands.entries()) {
+				if (description) {
+					descriptions.push({command, description});
+				}
+
+				this.bot.command(command, cb);
+			}
+
+			this.bot.telegram.setMyCommands(descriptions);
+			this.bot.launch();
+
+			process.once('SIGINT', () => this.bot.stop('SIGINT'));
+			process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+
+		} catch (err) {
+			console.error(err);
+		}
+	}
+
+	command(name: string, cb: MiddlewareFn<any>, description?: string | undefined): typeof this {
+		this.commands.set(name, {cb, description});
+		return this;
+	}
+
+	onStart(cb: MiddlewareFn<any>): typeof this {
+		this.bot.start(cb);
+		return this;
 	}
 }
-
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));

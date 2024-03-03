@@ -13,7 +13,10 @@
 		"strictFunctionTypes": true,
 		"strictPropertyInitialization": true,
 		"strict": true,
-		"noImplicitAny": false
+		"noImplicitAny": false,
+		"paths": {
+			"*": ["src/*"]
+		}
 	},
 	"include": [
 		"src/**/*",

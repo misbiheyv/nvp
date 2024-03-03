@@ -1,5 +1,8 @@
 import type { Requester } from './interface';
 
+/**
+ * Базовый движок для запросов
+ */
 export default class BaseRequester implements Requester {
 	decoders = {};
 
