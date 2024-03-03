@@ -1,24 +1,37 @@
-/* eslint-disable no-unused-vars */
-interface GetParams {
-	query: Dictionary<string>;
+export type RequestMethod = 'get' | 'post' | 'put' | 'delete';
+
+export interface GetParams {
+	query: Dictionary<any>;
 }
 
-interface PostParams {
-	query: Dictionary<string>;
+export interface PostParams {
+	query: Dictionary<any>;
 	body: Dictionary;
 }
 
-interface PutParams extends PostParams{}
+export interface PutParams extends PostParams{}
 
-interface DeleteParams extends PostParams{}
+export interface DeleteParams extends PostParams{}
+
+export type ParamsMap = {
+	get: GetParams;
+	post: PostParams,
+	put: PutParams,
+	delete: DeleteParams
+}
+
+export type Params = GetParams & PostParams & PutParams & DeleteParams;
+
+export type RequestParams<T extends Params = Params> = {
+	[K in keyof T]?: T[K];
+}
+
+export type Decoder = <D = unknown, R = unknown>(data: D, params: RequestParams) => CanPromise<R>;
+
+export type Decoders = Record<RequestMethod, Iterable<Decoder>>;
 
 export interface Requester {
-	decoders: Dictionary;
-
-	requestEngine: () => {
-		get?(url: string, params?: GetParams): Promise<unknown>,
-		post?(url: string, params?: PostParams): Promise<unknown>,
-		put?(url: string, params?: PutParams): Promise<unknown>,
-		delete?(url: string, params?: DeleteParams): Promise<unknown>,
+	requestEngine(): {
+		[K in RequestMethod]?: <R = unknown>(url: string, params: ParamsMap[K]) => CanPromise<R>;
 	}
 }

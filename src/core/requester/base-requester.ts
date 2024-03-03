@@ -1,19 +1,37 @@
-import type { Requester } from 'core/requester/interface';
+import type { Requester, GetParams, Decoders } from 'core/requester/interface';
 
 /**
  * Базовый движок для запросов
  */
 export default class BaseRequester implements Requester {
-	decoders = {};
+	static decoders: Decoders = {
+		get: [],
+		post: [],
+		put: [],
+		delete: []
+	};
 
 	protected query: Dictionary = {};
 
-	async get(url: string, params: Dictionary<any>) {
-		let res = await this.requestEngine().get(url, params);
-		this.query = params.query;
+	readonly baseQuery?: Dictionary = {};
 
-		for (const decoder of this.decoders['get'] ?? []) {
-			res = decoder(res);
+	readonly baseUrl?: string;
+
+	async get<T = unknown>(params: GetParams): Promise<T>;
+	async get<T = unknown>(url: string | GetParams, params?: GetParams): Promise<T>;
+	async get<T = unknown>(urlOrParams: string | GetParams, params?: GetParams): Promise<T> {
+		const
+			url = typeof urlOrParams === 'string' ? urlOrParams : this.baseUrl,
+			p = typeof urlOrParams === 'string' ? params : urlOrParams,
+			reqParams = {query: {...this.baseQuery, ...p?.query}};
+
+		let
+			res = await this.requestEngine().get(url, reqParams);
+
+		this.query = reqParams.query;
+
+		for (const decoder of this.constructor['decoders']['get'] ?? []) {
+			res = decoder(res, reqParams);
 		}
 
 		return res;

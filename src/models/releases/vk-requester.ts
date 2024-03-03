@@ -7,8 +7,9 @@ import { filterReleases, filterByType } from 'models/releases/helpers';
  * Движок запросов: возвращает список релизов
  */
 export class ReleasesList extends BaseRequester {
-	override decoders = {
-		get: [filterReleases, filterByType.bind(this)]
+	static override decoders = {
+		...BaseRequester.decoders,
+		get: [...BaseRequester.decoders.get, filterReleases, filterByType]
 	};
 
 	override requestEngine() {

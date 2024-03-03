@@ -17,7 +17,7 @@ export default class VkParser {
 			{startBoundary, endBoundary} = getClosestThursdayBoundaries(date),
 			identifier = releaseSegmentIdentifiers.get(type);
 
-		return new ReleasesList().get(
+		return new ReleasesList().get<string[]>(
 			'getPostsInTimeRange',
 			{
 				query: {

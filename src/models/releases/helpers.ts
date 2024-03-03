@@ -1,6 +1,3 @@
-import type { BaseRequester } from 'core/requester';
-
-/* eslint-disable no-unused-vars */
 export enum ReleaseTypes {
 	ALL,
 	RU_ALBUMS,
@@ -8,7 +5,6 @@ export enum ReleaseTypes {
 	RU_SINGLES,
 	EN_SINGLES
 }
-/* eslint-enable no-unused-vars */
 
 export const releaseSegmentIdentifiers = new Map([
 	[ReleaseTypes.ALL, undefined],
@@ -39,13 +35,14 @@ export function filterReleases(response) {
 /**
  * Декодер: фильтрует список релизов по переданному типу
  * @param response
+ * @param params
  */
-export function filterByType(this: BaseRequester, response) {
+export function filterByType(response, params) {
 	let
 		start = 0,
 		end = 0;
 
-	if (this.query.type == null) {
+	if (params.query.type == null) {
 		return response;
 	}
 
@@ -57,7 +54,7 @@ export function filterByType(this: BaseRequester, response) {
 			break;
 		}
 
-		if (line.includes(this.query.type)) {
+		if (line.includes(params.query.type)) {
 			start = i;
 		}
 	}
