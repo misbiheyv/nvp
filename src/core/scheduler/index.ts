@@ -1,5 +1,5 @@
 import { CronJob } from 'cron';
-import { stringifiedBaseCommands } from '../helpers';
+import { stringifiedBaseCommands } from 'core/helpers';
 
 function scheduleJob(pattern: string, cb) {
 	return new CronJob(pattern, cb, null, true, 'Europe/Moscow');

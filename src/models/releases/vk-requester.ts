@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import * as vkApi from 'vk-io';
-import {BaseRequester} from '../../core/requester';
-import {filterReleases, filterByType} from './helpers';
+import { BaseRequester } from 'core/requester';
+import { filterReleases, filterByType } from 'models/releases/helpers';
 
 /**
  * Движок запросов: возвращает список релизов

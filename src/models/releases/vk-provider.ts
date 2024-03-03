@@ -1,6 +1,6 @@
-import { getClosestThursdayBoundaries } from '../../core/helpers';
-import { ReleasesList } from './vk-requester';
-import { ReleaseTypes, releaseSegmentIdentifiers } from './helpers';
+import { getClosestThursdayBoundaries } from 'core/helpers';
+import { ReleasesList } from 'models/releases/vk-requester';
+import { ReleaseTypes, releaseSegmentIdentifiers } from 'models/releases/helpers';
 
 /**
  * Класс для получения данных о релизах из VK

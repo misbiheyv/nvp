@@ -1,9 +1,8 @@
 import 'dotenv/config';
-import { Releases, ReleaseTypes } from './models/releases';
-import { normalizeList } from './models/releases';
-import { commands, stringifiedCommands } from './core/helpers';
-import { scheduleTasks } from './core/scheduler';
-import TgBot from './tg-bot';
+import { Releases, ReleaseTypes, normalizeList } from 'models/releases';
+import { commands, stringifiedCommands } from 'core/helpers';
+import { scheduleTasks } from 'core/scheduler';
+import TgBot from 'tg-bot';
 
 const bot = new TgBot()
   .onStart((ctx) => {

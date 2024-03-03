@@ -1,2 +1,2 @@
-export {default as Releases} from './vk-provider';
-export {ReleaseTypes, releaseSegmentIdentifiers, normalizeList} from './helpers';
+export { default as Releases } from 'models/releases/vk-provider';
+export { ReleaseTypes, releaseSegmentIdentifiers, normalizeList } from 'models/releases/helpers';

@@ -1,4 +1,4 @@
-import type { BaseRequester } from '../../core/requester';
+import type { BaseRequester } from 'core/requester';
 
 /* eslint-disable no-unused-vars */
 export enum ReleaseTypes {

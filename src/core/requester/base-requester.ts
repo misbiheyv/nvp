@@ -1,4 +1,4 @@
-import type { Requester } from './interface';
+import type { Requester } from 'core/requester/interface';
 
 /**
  * Базовый движок для запросов
