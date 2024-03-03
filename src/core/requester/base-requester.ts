@@ -4,16 +4,14 @@ import type { Requester, GetParams, Decoders } from 'core/requester/interface';
  * Базовый движок для запросов
  */
 export default class BaseRequester implements Requester {
-	static decoders: Decoders = {
+	static readonly decoders: Decoders = {
 		get: [],
 		post: [],
 		put: [],
 		delete: []
 	};
 
-	protected query: Dictionary = {};
-
-	readonly baseQuery?: Dictionary = {};
+	readonly baseQuery: Dictionary = {};
 
 	readonly baseUrl?: string;
 
@@ -28,10 +26,8 @@ export default class BaseRequester implements Requester {
 		let
 			res = await this.requestEngine().get(url, reqParams);
 
-		this.query = reqParams.query;
-
 		for (const decoder of this.constructor['decoders']['get'] ?? []) {
-			res = decoder(res, reqParams);
+			res = await decoder(res, reqParams);
 		}
 
 		return res;

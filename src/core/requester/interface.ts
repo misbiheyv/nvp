@@ -26,7 +26,9 @@ export type RequestParams<T extends Params = Params> = {
 	[K in keyof T]?: T[K];
 }
 
-export type Decoder = <D = unknown, R = unknown>(data: D, params: RequestParams) => CanPromise<R>;
+export interface Decoder<I = unknown, O = unknown> {
+	(data: I, params: RequestParams): CanPromise<O>;
+}
 
 export type Decoders = Record<RequestMethod, Iterable<Decoder>>;
 

@@ -1,8 +1,9 @@
 import 'dotenv/config';
-import { Releases, ReleaseTypes, normalizeList } from 'models/releases';
+import TgBot from 'tg-bot';
+import { getClosestReleases } from 'helpers';
 import { commands, stringifiedCommands } from 'core/helpers';
 import { scheduleTasks } from 'core/scheduler';
-import TgBot from 'tg-bot';
+import { ReleaseTypes } from 'models/releases';
 
 const bot = new TgBot()
   .onStart((ctx) => {
@@ -11,7 +12,7 @@ const bot = new TgBot()
   })
 
   .command('news', async (ctx) => {
-    const res = normalizeList(await new Releases().getClosest(ReleaseTypes.ALL));
+    const res = await getClosestReleases(ReleaseTypes.ALL);
 
     if (res == null || res === '') {
       return ctx.reply('Oops... Something was wrong');
@@ -29,7 +30,7 @@ for (const type of Object.keys(ReleaseTypes)) {
   }
 
   bot.command(type.toLowerCase(), async (ctx) => {
-    const res = normalizeList(await new Releases().getClosest(ReleaseTypes[type]));
+    const res = await getClosestReleases(ReleaseTypes[type]);
 
     if (res == null || res === '') {
       return ctx.reply('Oops... Something was wrong');
