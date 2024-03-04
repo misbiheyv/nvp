@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import TgBot from 'tg-bot';
-import { getClosestReleases } from 'helpers';
+import { getClosestReleases, getPictureURL } from 'helpers';
 import { commands, stringifiedCommands } from 'core/helpers';
 import { scheduleTasks } from 'core/scheduler';
 import { ReleaseTypes } from 'models/releases';
@@ -17,10 +17,6 @@ const bot = new TgBot(token)
     ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
   })
 
-  .onError((err) => {
-    console.error('error', err);
-  })
-
   .command('news', async (ctx) => {
     const res = await getClosestReleases(ReleaseTypes.ALL);
 
@@ -28,13 +24,13 @@ const bot = new TgBot(token)
       return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    for (const list of Object.values(res)) {
-      ctx.replyWithPhoto({url: 'https://avatars.mds.yandex.net/get-afishanew/31447/925392f04f6ecd05ffc308fac8367fef/s380x220'}, {
+    for (const [type, list] of Object.entries(res)) {
+      ctx.replyWithPhoto({url: getPictureURL(<ReleaseTypes>type)}, {
         caption: list,
 
         // eslint-disable-next-line camelcase
         parse_mode: 'HTML'
-      });
+      }).catch(console.error);
     }
 
   }, commands.get('news'))
@@ -55,15 +51,16 @@ for (const type of Object.keys(ReleaseTypes)) {
       return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    ctx.replyWithPhoto({url: 'https://avatars.mds.yandex.net/get-afishanew/31447/925392f04f6ecd05ffc308fac8367fef/s380x220'}, {
+    ctx.replyWithPhoto({url: getPictureURL(ReleaseTypes[type])}, {
       caption: res,
 
       // eslint-disable-next-line camelcase
       parse_mode: 'HTML'
-    });
+    }).catch(console.error);
   }, commands.get(type.toLowerCase()));
 }
 
 console.log(`App is running in ${process.env.ENVIRONMENT} mode.`);
 
+bot.onError((err) => console.error('error', err));
 bot.start();
