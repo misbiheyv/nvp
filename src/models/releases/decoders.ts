@@ -99,8 +99,8 @@ export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = 
 
 		for (const line of list) {
 			res[segment].push(line.links?.ym == null ?
-					line.title :
-					`<a href="${line.links.ym}">${line.title}</a>`
+				line.title :
+				`<a href="${line.links.ym}">${line.title}</a>`
 			);
 		}
 	});

@@ -1,5 +1,5 @@
-import { MiddlewareFn, Telegraf } from 'telegraf';
-import type { BotCommand } from 'telegraf/typings/core/types/typegram';
+import { Context, MiddlewareFn, Telegraf } from 'telegraf';
+import type { BotCommand, Update } from 'telegraf/typings/core/types/typegram';
 
 export default class TgBot {
 
@@ -41,6 +41,11 @@ export default class TgBot {
 
 	onStart(cb: MiddlewareFn<any>): typeof this {
 		this.bot.start(cb);
+		return this;
+	}
+
+	onError(handler: (err: unknown, ctx: Context<Update>) => CanPromise<void>): typeof this {
+		this.bot.catch(handler);
 		return this;
 	}
 }

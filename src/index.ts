@@ -17,6 +17,10 @@ const bot = new TgBot(token)
     ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
   })
 
+  .onError((err) => {
+    console.error('error', err);
+  })
+
   .command('news', async (ctx) => {
     const res = await getClosestReleases(ReleaseTypes.ALL);
 
@@ -36,6 +40,7 @@ const bot = new TgBot(token)
   }, commands.get('news'))
 
   .command('help', (ctx) => ctx.reply(`Список команд:\n\n${stringifiedCommands}`), commands.get('help'))
+
   .command('ping', (ctx) => ctx.reply('pong'), commands.get('ping'));
 
 for (const type of Object.keys(ReleaseTypes)) {
@@ -60,4 +65,5 @@ for (const type of Object.keys(ReleaseTypes)) {
 }
 
 console.log(`App is running in ${process.env.ENVIRONMENT} mode.`);
+
 bot.start();
