@@ -1,31 +1,26 @@
-import { Decoder } from 'core/requester/interface';
-import { RawResponse, DecodedResponse, ReleaseTypes } from 'models/releases/interface';
-import { releaseSegmentIdentifiers, releaseSegmentPreview } from 'models/releases/helpers';
+import type { Decoder } from 'core/requester';
 import { YMLinker } from 'models/linker';
 import { mapReleaseTypeToYmType } from 'models/helpers';
-
-/**
- * Декодер: фильтрует посты, находит среди них список релизов
- * @param response
- */
-export const filterReleases: Decoder<RawResponse, string[]> = (response) => {
-	const res = response.response.filter(el => el.text.includes('#musicfridayo_o@novinkifriday'));
-
-	if (res.length === 0) {
-		return [];
-	}
-
-	return res[0].text.split('\n');
-};
+import { releaseSegmentIdentifiers, releaseSegmentPreview } from 'models/releases/helpers';
+import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } from 'models/releases/interface';
 
 /**
  * Декодер: приводит ответ к нормализованному виду
- * @param response
+ *
+ * @param list
+ * @param params
  */
-export const normalizeResponse: Decoder<string[], DecodedResponse> = (list, {query}) => {
+export const normalizeResponse: Decoder<RawResponse, DecodedResponseWithMeta> = (response, {query}) => {
+	const res = response.response.filter(el => el.text.includes('#musicfridayo_o@novinkifriday'));
+
+	if (res.length === 0) {
+		return {};
+	}
+
 	const
+		list = res[0].text.split('\n'),
 		segments = [...releaseSegmentIdentifiers.entries()],
-		result: DecodedResponse = {},
+		result: DecodedResponseWithMeta = {},
 		queryType = query?.type;
 
 	let
@@ -66,9 +61,9 @@ export const normalizeResponse: Decoder<string[], DecodedResponse> = (list, {que
 
 /**
  * Декодер: обогащает ответ дополнительными данными
- * @param response
+ * @param data
  */
-export const extractResponse: Decoder<DecodedResponse, DecodedResponse> = async (data) => {
+export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWithMeta> = async (data) => {
 	const linker = new YMLinker();
 	const promises: Promise<any>[] = [];
 
@@ -94,27 +89,23 @@ export const extractResponse: Decoder<DecodedResponse, DecodedResponse> = async 
 
 /**
  * Декодер: сворачивает ответ в список
- * @param response
+ * @param data
  */
-export const reduceToList: Decoder<DecodedResponse, string[]> = async (data) => {
-	let prevSegment: CanUndef<string>;
+export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) => {
+	const res = {};
 
-	return Object.entries(data).reduce<string[]>((acc, [segment, list]) => {
-		if (prevSegment !== segment) {
-			prevSegment = segment;
-			const title = releaseSegmentPreview.get(<ReleaseTypes>segment);
+	Object.entries(data).forEach(([segment, list]) => {
+		res[segment] = [releaseSegmentPreview.get(<ReleaseTypes>segment)];
 
-			if (title) {
-				acc.push(title);
-			}
+		for (const line of list) {
+			res[segment].push(line.links?.ym == null ?
+					line.title :
+					`<a href="${line.links.ym}">${line.title}</a>`
+			);
 		}
+	});
 
-		list.forEach((record) => {
-			record.links?.ym == null ?
-				acc.push(record.title) :
-				acc.push(`[${record.title}](${record.links.ym})`);
-		});
+	Object.entries(res).forEach(([segment, list]) => res[segment] = (<string[]>list).join('\n'));
 
-		return acc;
-	}, []);
+	return res;
 };

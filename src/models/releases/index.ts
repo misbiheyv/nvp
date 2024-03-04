@@ -1,19 +1,18 @@
 import * as vkApi from 'vk-io';
-import { BaseRequester } from 'core/requester';
-import { filterReleases, normalizeResponse, reduceToList } from 'models/releases/decoders';
-import { Decoders } from 'core/requester/interface';
+import Requester, { Decoders } from 'core/requester';
+import { normalizeResponse, reduceToLists, extractResponse } from 'models/releases/decoders';
 
-export { releaseSegmentIdentifiers, normalizeList } from 'models/releases/helpers';
+export { releaseSegmentIdentifiers } from 'models/releases/helpers';
 export * from 'models/releases/interface';
 
 
 /**
  * Движок запросов: возвращает список релизов
  */
-export class ReleasesList extends BaseRequester {
+export class ReleasesList extends Requester {
 	static override decoders: Decoders = <Decoders>{
-		...BaseRequester.decoders,
-		get: [...BaseRequester.decoders.get, filterReleases, normalizeResponse, reduceToList]
+		...Requester.decoders,
+		get: [...Requester.decoders.get, normalizeResponse, extractResponse, reduceToLists]
 	};
 
 	override requestEngine() {

@@ -32,7 +32,7 @@ export interface Decoder<I = unknown, O = unknown> {
 
 export type Decoders = Record<RequestMethod, Iterable<Decoder>>;
 
-export interface Requester {
+export interface IRequester {
 	requestEngine(): {
 		[K in RequestMethod]?: <R = unknown>(url: string, params: ParamsMap[K]) => CanPromise<R>;
 	}

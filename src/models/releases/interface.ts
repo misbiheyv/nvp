@@ -6,7 +6,7 @@ export enum ReleaseTypes {
 	EN_SINGLES = 'en_singles'
 }
 
-export type DecodedResponse = {
+export type DecodedResponseWithMeta = {
 	[key in ReleaseTypes]?: Array<{
 		title: string;
 
@@ -19,6 +19,10 @@ export type DecodedResponse = {
 		}
 	}>
 }
+
+export type DecodedResponse = {
+	[key in ReleaseTypes]?: string
+};
 
 export type RawResponse = {
 	response: Array<{text: string}>;

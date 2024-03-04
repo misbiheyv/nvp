@@ -16,6 +16,3 @@ export const releaseSegmentPreview = new Map([
 	[ReleaseTypes.EN_SINGLES, '\n🎙️ Иностранные треки:'],
 ]);
 
-export function normalizeList(list: string[]): string {
-	return list.join('\n');
-}

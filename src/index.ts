@@ -20,11 +20,19 @@ const bot = new TgBot(token)
   .command('news', async (ctx) => {
     const res = await getClosestReleases(ReleaseTypes.ALL);
 
-    if (res == null || res === '') {
-      return ctx.reply('Oops... Something was wrong');
+    if (res == null) {
+      return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    ctx.reply(res);
+    for (const list of Object.values(res)) {
+      ctx.replyWithPhoto({url: 'https://avatars.mds.yandex.net/get-afishanew/31447/925392f04f6ecd05ffc308fac8367fef/s380x220'}, {
+        caption: list,
+
+        // eslint-disable-next-line camelcase
+        parse_mode: 'HTML'
+      });
+    }
+
   }, commands.get('news'))
 
   .command('help', (ctx) => ctx.reply(`Список команд:\n\n${stringifiedCommands}`), commands.get('help'))
@@ -36,13 +44,18 @@ for (const type of Object.keys(ReleaseTypes)) {
   }
 
   bot.command(type.toLowerCase(), async (ctx) => {
-    const res = await getClosestReleases(ReleaseTypes[type]);
+    const res = await getClosestReleases(ReleaseTypes[type]).then((res) => res[ReleaseTypes[type]]);
 
-    if (res == null || res === '') {
-      return ctx.reply('Oops... Something was wrong');
+    if (res == null) {
+      return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    ctx.reply(res);
+    ctx.replyWithPhoto({url: 'https://avatars.mds.yandex.net/get-afishanew/31447/925392f04f6ecd05ffc308fac8367fef/s380x220'}, {
+      caption: res,
+
+      // eslint-disable-next-line camelcase
+      parse_mode: 'HTML'
+    });
   }, commands.get(type.toLowerCase()));
 }
 

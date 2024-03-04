@@ -1,12 +1,13 @@
-import { BaseRequester } from 'core/requester';
-import { Decoders } from 'core/requester/interface';
+import Requester, { Decoders } from 'core/requester';
 import { RawResponse } from 'models/linker/interface';
 
-export class YMLinker extends BaseRequester {
+export * from 'models/linker/interface';
+
+export class YMLinker extends Requester {
 	static decoders: Decoders = <Decoders>{
-		...BaseRequester.decoders,
+		...Requester.decoders,
 		get: [
-			...BaseRequester.decoders.get,
+			...Requester.decoders.get,
 
 			(response: RawResponse, params) => {
 				const type = params.query?.type ?? 'all';

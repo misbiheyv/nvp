@@ -1,15 +1,15 @@
-import { normalizeList } from 'models/releases';
+import { DecodedResponse, ReleaseTypes } from 'models/releases';
 import { getClosestThursdayBoundaries } from 'core/helpers';
 import { ReleasesList } from 'models/releases';
 
-export function getClosestReleases(type) {
+export function getClosestReleases(type): Promise<{[key in ReleaseTypes]?: string}> {
   const {startBoundary, endBoundary} = getClosestThursdayBoundaries();
 
-  return new ReleasesList().get<string[]>({
+  return new ReleasesList().get<DecodedResponse>({
     query: {
       startTime: startBoundary.getTime(),
       endTime: endBoundary.getTime(),
       type
     }
-  }).then(normalizeList);
+  });
 }

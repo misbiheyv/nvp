@@ -5,7 +5,7 @@ export default class TgBot {
 
 	protected bot: Telegraf;
 
-	protected commands: Map<string, {cb: MiddlewareFn<any>, description?: string}> = new Map();
+	protected commands: Map<string, {cb: Parameters<typeof Telegraf.command>[1], description?: string}> = new Map();
 
 	constructor(token: string) {
 		this.bot = new Telegraf(token);
@@ -34,7 +34,7 @@ export default class TgBot {
 		}
 	}
 
-	command(name: string, cb: MiddlewareFn<any>, description?: string | undefined): typeof this {
+	command(name: string, cb: Parameters<typeof Telegraf.command>[1], description?: string | undefined): typeof this {
 		this.commands.set(name, {cb, description});
 		return this;
 	}
