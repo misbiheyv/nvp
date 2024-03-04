@@ -5,7 +5,13 @@ import { commands, stringifiedCommands } from 'core/helpers';
 import { scheduleTasks } from 'core/scheduler';
 import { ReleaseTypes } from 'models/releases';
 
-const bot = new TgBot()
+const token = process.env.ENVIRONMENT === 'PROD' ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_TOKEN;
+
+if (token == null) {
+  throw new Error('Telegram token is not defined!');
+}
+
+const bot = new TgBot(token)
   .onStart((ctx) => {
     scheduleTasks(ctx);
     ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
@@ -40,4 +46,5 @@ for (const type of Object.keys(ReleaseTypes)) {
   }, commands.get(type.toLowerCase()));
 }
 
+console.log(`App is running in ${process.env.ENVIRONMENT} mode.`);
 bot.start();

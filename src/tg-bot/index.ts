@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { MiddlewareFn, Telegraf } from 'telegraf';
 import type { BotCommand } from 'telegraf/typings/core/types/typegram';
 
@@ -8,14 +7,8 @@ export default class TgBot {
 
 	protected commands: Map<string, {cb: MiddlewareFn<any>, description?: string}> = new Map();
 
-	constructor(token?: string) {
-		const tok = token ?? process.env.TELEGRAM_TOKEN;
-
-		if (tok == null) {
-			throw Error('TELEGRAM_TOKEN was not found');
-		}
-
-		this.bot = new Telegraf(tok);
+	constructor(token: string) {
+		this.bot = new Telegraf(token);
 	}
 
 	start(): void {
