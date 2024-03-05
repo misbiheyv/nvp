@@ -18,7 +18,7 @@ export default class Logger {
 				format.timestamp({format: 'YYYY-MM-DD HH:mm:ss.SSS'}),
 				format.errors({stack: true}),
 				format.splat(),
-				format.json()
+				format.simple()
 			),
 
 			transports: [

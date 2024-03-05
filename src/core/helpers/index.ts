@@ -1,30 +1,27 @@
 /**
  * Get the boundaries (start and end dates and times) of the nearest previous or current Thursday.
  *
- * @param [date=new Date()]
- * @param [offsetHours=0]
+ * @param [date]
+ * @param [offsetHours]
  */
-export function getClosestThursdayBoundaries(date = new Date(), offsetHours = 0) {
-  const utcOffset = offsetHours * 60;
+export function getClosestThursdayBoundaries(date = new Date(), offsetUTC = -3) {
+  const utcOffsetMinutes = new Date().getTimezoneOffset() + offsetUTC * 60;
 
-  date.setMinutes(date.getMinutes() - utcOffset);
+  date.setMinutes(date.getMinutes() - utcOffsetMinutes);
 
   const thursday = new Date(date);
 
-  if (date.getDay() !== 4) {
-    const daysToThursday = (thursday.getDay() - 4 + 7) % 7;
-    thursday.setDate(thursday.getDate() - daysToThursday);
+  if (date.getUTCDay() !== 4) {
+    const daysToThursday = (thursday.getUTCDay() - 4 + 7) % 7;
+    thursday.setUTCDate(thursday.getUTCDate() - daysToThursday);
   }
 
   const
     startBoundary = new Date(thursday),
     endBoundary = new Date(thursday);
 
-  startBoundary.setHours(0, 0, 0, 0);
-  startBoundary.setMinutes(startBoundary.getMinutes() + utcOffset);
-
-  endBoundary.setHours(23, 59, 59, 999);
-  endBoundary.setMinutes(endBoundary.getMinutes() + utcOffset);
+  startBoundary.setUTCHours(offsetUTC, 0, 0, 0);
+  endBoundary.setUTCHours(23 + offsetUTC, 59, 59, 999);
 
   return { startBoundary, endBoundary };
 }
