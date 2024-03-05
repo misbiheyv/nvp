@@ -21,7 +21,13 @@ export type DecodedResponseWithMeta = {
 }
 
 export type DecodedResponse = {
-	[key in ReleaseTypes]?: string
+	[key in ReleaseTypes]?: {
+		text: string;
+
+		attachments?: {
+			picture?: string;
+		};
+	}
 };
 
 export type RawResponse = {

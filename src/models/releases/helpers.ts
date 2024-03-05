@@ -16,3 +16,6 @@ export const releaseSegmentPreview = new Map([
 	[ReleaseTypes.EN_SINGLES, '\n🎙️ Иностранные треки:'],
 ]);
 
+export function getPictureURL(type: ReleaseTypes) {
+  return `${process.env.S3_BUCKET_URL}/segment-pics/${type}.jpg`;
+}

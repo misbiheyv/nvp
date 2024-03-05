@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import TgBot from 'tg-bot';
-import { getClosestReleases, getPictureURL } from 'helpers';
+import { getClosestReleases } from 'helpers';
 import { commands, stringifiedCommands } from 'core/helpers';
 import { scheduleTasks } from 'core/scheduler';
 import { ReleaseTypes } from 'models/releases';
@@ -24,10 +24,14 @@ const bot = new TgBot(token)
       return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    for (const [type, list] of Object.entries(res)) {
-      ctx.replyWithPhoto({url: getPictureURL(<ReleaseTypes>type)}, {
-        caption: list,
+    for (const data of Object.values(res)) {
+      if (data.attachments?.picture == null) {
+        ctx.replyWithHTML(data.text);
+        continue;
+      }
 
+      ctx.replyWithPhoto({url: data.attachments.picture}, {
+        caption: data.text,
         // eslint-disable-next-line camelcase
         parse_mode: 'HTML'
       }).catch(console.error);
@@ -51,12 +55,18 @@ for (const type of Object.keys(ReleaseTypes)) {
       return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
-    ctx.replyWithPhoto({url: getPictureURL(ReleaseTypes[type])}, {
-      caption: res,
+    if (res.attachments?.picture == null) {
+      ctx.replyWithHTML(res.text);
+      return;
+    }
+
+    ctx.replyWithPhoto({url: res.attachments.picture}, {
+      caption: res.text,
 
       // eslint-disable-next-line camelcase
       parse_mode: 'HTML'
     }).catch(console.error);
+
   }, commands.get(type.toLowerCase()));
 }
 

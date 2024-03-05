@@ -1,7 +1,7 @@
 import type { Decoder } from 'core/requester';
 import { YMLinker } from 'models/linker';
 import { mapReleaseTypeToYmType } from 'models/helpers';
-import { releaseSegmentIdentifiers, releaseSegmentPreview } from 'models/releases/helpers';
+import { releaseSegmentIdentifiers, releaseSegmentPreview, getPictureURL } from 'models/releases/helpers';
 import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } from 'models/releases/interface';
 
 /**
@@ -61,11 +61,18 @@ export const normalizeResponse: Decoder<RawResponse, DecodedResponseWithMeta> = 
 
 /**
  * Декодер: обогащает ответ дополнительными данными
+ *
  * @param data
+ * @param params
  */
-export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWithMeta> = async (data) => {
-	const linker = new YMLinker();
-	const promises: Promise<any>[] = [];
+export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWithMeta> = async (data, {query}) => {
+	const
+		linker = new YMLinker(),
+		promises: Promise<any>[] = [];
+
+	if (!query?.links) {
+		return data;
+	}
 
 	for (const segment of Object.values(data)) {
 		for (const el of segment) {
@@ -91,21 +98,21 @@ export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWi
  * Декодер: сворачивает ответ в список
  * @param data
  */
-export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) => {
-	const res = {};
+export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) =>
+	Object.entries(data).reduce((res, [name, list]) => {
+		const
+			segment = <ReleaseTypes>name;
 
-	Object.entries(data).forEach(([segment, list]) => {
-		res[segment] = [releaseSegmentPreview.get(<ReleaseTypes>segment)];
+		res[segment] = {
+			text: list.reduce(
+				(acc, line) => acc?.concat(`\n${line.links?.ym == null ? line.title : `<a href="${line.links.ym}">${line.title}</a>`}`),
+				releaseSegmentPreview.get(segment) ?? ''
+			),
 
-		for (const line of list) {
-			res[segment].push(line.links?.ym == null ?
-				line.title :
-				`<a href="${line.links.ym}">${line.title}</a>`
-			);
-		}
-	});
+			attachments: {
+				picture: getPictureURL(segment)
+			}
+		};
 
-	Object.entries(res).forEach(([segment, list]) => res[segment] = (<string[]>list).join('\n'));
-
-	return res;
-};
+		return res;
+	}, <DecodedResponse>{});
