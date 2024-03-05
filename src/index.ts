@@ -4,6 +4,7 @@ import { getClosestReleases } from 'helpers';
 import { commands, stringifiedCommands } from 'core/helpers';
 import { scheduleTasks } from 'core/scheduler';
 import { ReleaseTypes } from 'models/releases';
+import { globalLogger } from 'core/logger';
 
 const token = process.env.ENVIRONMENT === 'PROD' ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_TOKEN;
 
@@ -26,7 +27,7 @@ const bot = new TgBot(token)
 
     for (const data of Object.values(res)) {
       if (data.attachments?.picture == null) {
-        ctx.replyWithHTML(data.text);
+        ctx.replyWithHTML(data.text).catch((err) => globalLogger.error('news:replyWithHTML', err));
         continue;
       }
 
@@ -34,7 +35,7 @@ const bot = new TgBot(token)
         caption: data.text,
         // eslint-disable-next-line camelcase
         parse_mode: 'HTML'
-      }).catch(console.error);
+      }).catch((err) => globalLogger.error('news:replyWithPhoto', err));
     }
 
   }, commands.get('news'))
@@ -49,14 +50,16 @@ for (const type of Object.keys(ReleaseTypes)) {
   }
 
   bot.command(type.toLowerCase(), async (ctx) => {
-    const res = await getClosestReleases(ReleaseTypes[type]).then((res) => res[ReleaseTypes[type]]);
+    const
+      releaseType = ReleaseTypes[type],
+      res = await getClosestReleases(releaseType).then((res) => res[releaseType]);
 
     if (res == null) {
       return ctx.reply('Упс... Кажется, что-то пошло не так :(');
     }
 
     if (res.attachments?.picture == null) {
-      ctx.replyWithHTML(res.text);
+      ctx.replyWithHTML(res.text).catch((err) => globalLogger.error(`${releaseType}:replyWithHTML`, err));
       return;
     }
 
@@ -65,12 +68,12 @@ for (const type of Object.keys(ReleaseTypes)) {
 
       // eslint-disable-next-line camelcase
       parse_mode: 'HTML'
-    }).catch(console.error);
+    }).catch((err) => globalLogger.error(`${releaseType}:replyWithPhoto`, err));
 
   }, commands.get(type.toLowerCase()));
 }
 
-console.log(`App is running in ${process.env.ENVIRONMENT} mode.`);
+globalLogger.debug(`App is running in ${process.env.ENVIRONMENT} mode.`);
 
-bot.onError((err) => console.error('error', err));
+bot.onError((err) => globalLogger.error('onError', err));
 bot.start();

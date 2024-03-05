@@ -3,6 +3,7 @@ import { YMLinker } from 'models/linker';
 import { mapReleaseTypeToYmType } from 'models/helpers';
 import { releaseSegmentIdentifiers, releaseSegmentPreview, getPictureURL } from 'models/releases/helpers';
 import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } from 'models/releases/interface';
+import { globalLogger } from 'core/logger';
 
 /**
  * Декодер: приводит ответ к нормализованному виду
@@ -14,6 +15,7 @@ export const normalizeResponse: Decoder<RawResponse, DecodedResponseWithMeta> = 
 	const res = response.response.filter(el => el.text.includes('#musicfridayo_o@novinkifriday'));
 
 	if (res.length === 0) {
+		globalLogger.info('decoderResult', {decoder: 'normalizeResponse', empty: true});
 		return {};
 	}
 
@@ -56,6 +58,7 @@ export const normalizeResponse: Decoder<RawResponse, DecodedResponseWithMeta> = 
 		result[type]?.push({title: line.trim(), type});
 	}
 
+	globalLogger.info('decoderResult', {decoder: 'normalizeResponse', empty: Object.keys(result).length === 0});
 	return result;
 };
 
@@ -71,6 +74,7 @@ export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWi
 		promises: Promise<any>[] = [];
 
 	if (!query?.links) {
+		globalLogger.info('decoderResult', {decoder: 'extractResponse', empty: Object.keys(data).length === 0});
 		return data;
 	}
 
@@ -91,19 +95,23 @@ export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWi
 		}
 	}
 
-	return Promise.allSettled(promises).then(() => data);
+	return Promise.allSettled(promises).then(() => {
+		globalLogger.info('decoderResult', {decoder: 'extractResponse', empty: Object.keys(data).length === 0});
+
+		return data;
+	});
 };
 
 /**
  * Декодер: сворачивает ответ в список
  * @param data
  */
-export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) =>
-	Object.entries(data).reduce((res, [name, list]) => {
+export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) => {
+	const result = Object.entries(data).reduce((acc, [name, list]) => {
 		const
 			segment = <ReleaseTypes>name;
 
-		res[segment] = {
+		acc[segment] = {
 			text: list.reduce(
 				(acc, line) => acc?.concat(`\n${line.links?.ym == null ? line.title : `<a href="${line.links.ym}">${line.title}</a>`}`),
 				releaseSegmentPreview.get(segment) ?? ''
@@ -114,5 +122,10 @@ export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = 
 			}
 		};
 
-		return res;
+		return acc;
 	}, <DecodedResponse>{});
+
+	globalLogger.info('decoderResult', {decoder: 'reduceToLists', empty: Object.keys(result).length === 0});
+
+	return result;
+};

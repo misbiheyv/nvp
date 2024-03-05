@@ -1,3 +1,4 @@
+import { globalLogger } from 'core/logger';
 import { Context, MiddlewareFn, Telegraf } from 'telegraf';
 import type { BotCommand, Update } from 'telegraf/typings/core/types/typegram';
 
@@ -20,7 +21,17 @@ export default class TgBot {
 					descriptions.push({command, description});
 				}
 
-				this.bot.command(command, cb);
+				this.bot.command(command, async (ctx) => {
+					globalLogger.info('commandCall', {
+						command,
+						id: ctx.chat.id
+					});
+
+					// TODO: Нормально типизировать
+					await (<any>cb)(ctx);
+
+					globalLogger.info('commandEnd', {command, id: ctx.chat.id});
+				});
 			}
 
 			this.bot.telegram.setMyCommands(descriptions);
