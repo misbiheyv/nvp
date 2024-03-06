@@ -1,29 +1,19 @@
 {
-  "name": "nvp-parser",
-  "version": "0.1.0",
-  "description": "",
-  "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js",
-      "default": "./dist/esm/index.js"
-    },
-    "./package.json": "./package.json"
-  },
+  "name": "nvp",
+  "version": "1.0.0-rc.1",
+  "description": "Music Releases Notifier",
+  "main": "./dist/index.js",
   "scripts": {
-    "dev": "ENVIRONMENT=DEV node ./dist/cjs/index.js",
-    "start": "ENVIRONMENT=PROD node ./dist/cjs/index.js",
+    "dev": "ENVIRONMENT=DEV node ./dist/index.js",
+    "start": "ENVIRONMENT=PROD node ./dist/index.js",
+    "dev:watch": "nodemon ./dist/index.js",
+
     "build:clear": "rm -rf dist",
-    "build": "npm run build:clear && tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json",
-    "watch": "tsc -b ./tsconfig.cjs.json ./tsconfig.esm.json ./tsconfig.types.json --watch",
-    "postbuild": "tsc-alias -v --dir dist/cjs -p tsconfig.cjs.json && tsc-alias -v --dir dist/esm -p tsconfig.esm.json && tsc-alias -v --dir dist/types -p tsconfig.types.json",
-    "test": "npm run build && jest",
-    "lint": "eslint -- ./src",
-    "prepublishOnly": "npm run build"
+    "build": "npm run build:clear && tsc",
+    "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
+
+    "postbuild": "tsc-alias && npm run lint",
+    "lint": "eslint -- ./src"
   },
   "license": "MIT",
   "author": {
@@ -41,13 +31,11 @@
     "@types/node": "^18.14.6",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
+    "concurrently": "^8.2.2",
     "eslint": "^8.47.0",
+    "nodemon": "^3.1.0",
     "tsc-alias": "^1.8.7",
     "tslib": "^2.6.2",
     "typescript": "^4.9.5"
-  },
-  "files": [
-    "dist",
-    "index.d.ts"
-  ]
+  }
 }
