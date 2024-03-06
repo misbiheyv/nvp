@@ -1,6 +1,6 @@
 import path from 'path';
-import {createLogger, format, transports} from 'winston';
-import type {Logger as WinstonLogger} from 'winston';
+import { createLogger, format, transports } from 'winston';
+import type { Logger as WinstonLogger } from 'winston';
 
 const
 	errorLogsFile = path.resolve('logs/error.log'),

@@ -1,9 +1,9 @@
+import { globalLogger } from 'core/logger';
 import type { Decoder } from 'core/requester';
 import { YMLinker } from 'models/linker';
 import { mapReleaseTypeToYmType } from 'models/helpers';
 import { releaseSegmentIdentifiers, releaseSegmentPreview, getPictureURL } from 'models/releases/helpers';
 import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } from 'models/releases/interface';
-import { globalLogger } from 'core/logger';
 
 /**
  * Декодер: приводит ответ к нормализованному виду

@@ -1,6 +1,6 @@
-import { globalLogger } from 'core/logger';
 import { Context, MiddlewareFn, Telegraf } from 'telegraf';
 import type { BotCommand, Update } from 'telegraf/typings/core/types/typegram';
+import { globalLogger } from 'core/logger';
 
 /**
  * Класс реализует обертку для взаимодействия с телеграм ботом
