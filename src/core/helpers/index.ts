@@ -1,5 +1,5 @@
 /**
- * Get the boundaries (start and end dates and times) of the nearest previous or current Thursday.
+ * Возвращает время начала и конца текущего или прошлого четверга.
  *
  * @param [date]
  * @param [offsetHours]
@@ -26,21 +26,34 @@ export function getClosestThursdayBoundaries(date = new Date(), offsetUTC = -3) 
   return { startBoundary, endBoundary };
 }
 
-export const baseCommands = new Map([
-  ['news', 'посмотреть все новинки'],
-  ['ru_albums', 'посмотреть только русские альбомы'],
-  ['en_albums', 'посмотреть только зарубежные альбомы'],
-  ['ru_singles', 'посмотреть только русские синглы'],
-  ['en_singles', 'посмотреть только зарубежные синглы']
-]);
-
+/**
+ * Список всех доступных команд
+ */
 export const commands = new Map([
-  ...baseCommands,
-  ['help', 'узнать список команд'],
-  ['start', 'запустить бота'],
-  ['ping', 'проверить соединение']
+  ['news', {desc: 'посмотреть все новинки', type: 'base'}],
+  ['ru_albums', {desc: 'посмотреть только русские альбомы', type: 'base'}],
+  ['en_albums', {desc: 'посмотреть только зарубежные альбомы', type: 'base'}],
+  ['ru_singles', {desc: 'посмотреть только русские синглы', type: 'base'}],
+  ['en_singles', {desc: 'посмотреть только зарубежные синглы', type: 'base'}],
+
+  ['help', {desc: 'узнать список команд', type: 'system'}],
+  ['start', {desc: 'запустить бота', type: 'system'}],
+
+  ['ping', {desc: 'проверить соединение', type: 'debug'}]
 ]);
 
-export const stringifiedCommands = [...commands.entries()].reduce((acc, [command, desc]) => `${acc}/${command} - ${desc}\n`, '');
+/**
+ * Список всех доступных команд в формате строки
+ */
+export const stringifiedCommands = [...commands.entries()].reduce(
+  (acc, [command, info]) => info.type !== 'debug' ? `${acc}/${command} - ${info.desc}\n` : acc,
+  ''
+);
 
-export const stringifiedBaseCommands = [...baseCommands.entries()].reduce((acc, [command, desc]) => `${acc}/${command} - ${desc}\n`, '');
+/**
+ * Список всех основных команд в формате строки
+ */
+export const stringifiedBaseCommands = [...commands.entries()].reduce(
+  (acc, [command, info]) => info.type === 'base' ? `${acc}/${command} - ${info.desc}\n` : acc,
+  ''
+);

@@ -1,14 +1,23 @@
+import path from 'path';
 import {createLogger, format, transports} from 'winston';
 import type {Logger as WinstonLogger} from 'winston';
-import path from 'path';
 
 const
 	errorLogsFile = path.resolve('logs/error.log'),
 	baseLogsFile = path.resolve('logs/combined.log');
 
+/**
+ * Класс предоставляет возможности логирования
+ */
 export default class Logger {
+	/**
+	 * Словарь логгеров по неймспейсам
+	 */
 	protected static instances = new Map<string, Logger>();
 
+	/**
+	 * Инстанс логгера
+	 */
 	protected logger: WinstonLogger;
 
 	protected constructor() {
@@ -38,6 +47,10 @@ export default class Logger {
 		}
 	}
 
+	/**
+	 * Возвращает логгер для переданного неймспейса
+	 * @param [namespace]
+	 */
 	static init(namespace: string = '[[DEFAULT]]') {
 		let instance = this.instances.get(namespace);
 
@@ -49,6 +62,7 @@ export default class Logger {
 		return instance;
 	}
 
+	/** {@link WinstonLogger.info} */
   info(message: string, ...meta: any[]): void;
   info(infoObject: object): void;
 
@@ -61,6 +75,7 @@ export default class Logger {
 		this.logger.info(meta);
 	}
 
+	/** {@link WinstonLogger.debug} */
   debug(message: string, ...meta: any[]): void;
   debug(infoObject: object): void;
 
@@ -73,6 +88,7 @@ export default class Logger {
 		this.logger.debug(meta);
 	}
 
+	/** {@link WinstonLogger.warn} */
   warn(message: string, ...meta: any[]): void;
   warn(infoObject: object): void;
 
@@ -85,6 +101,7 @@ export default class Logger {
 		this.logger.warn(meta);
 	}
 
+	/** {@link WinstonLogger.error} */
   error(message: string, ...meta: any[]): void;
   error(infoObject: object): void;
 
@@ -98,4 +115,7 @@ export default class Logger {
 	}
 }
 
+/**
+ * Глобальный логгер
+ */
 export const globalLogger = Logger.init();

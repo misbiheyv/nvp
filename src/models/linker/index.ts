@@ -3,8 +3,11 @@ import { RawResponse } from 'models/linker/interface';
 
 export * from 'models/linker/interface';
 
+/**
+ * Движок запросов: возвращает ссылки на треки/альбомы из яндекс музыки
+ */
 export class YMLinker extends Requester {
-	static decoders: Decoders = <Decoders>{
+	static override decoders: Decoders = <Decoders>{
 		...Requester.decoders,
 		get: [
 			...Requester.decoders.get,

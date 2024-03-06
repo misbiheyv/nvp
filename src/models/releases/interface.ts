@@ -15,7 +15,7 @@ export type DecodedResponseWithMeta = {
 		artist?: string;
 
 		links?: {
-			ym?: string
+			ym?: Nullable<string>
 		}
 	}>
 }

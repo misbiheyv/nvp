@@ -22,7 +22,7 @@ const bot = new TgBot(token)
     const res = await getClosestReleases(ReleaseTypes.ALL);
 
     if (res == null) {
-      return ctx.reply('Упс... Кажется, что-то пошло не так :(');
+      return ctx.reply('Упс... Кажется, что-то пошло не так :(\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
     }
 
     for (const data of Object.values(res)) {
@@ -38,11 +38,11 @@ const bot = new TgBot(token)
       }).catch((err) => globalLogger.error('news:replyWithPhoto', err));
     }
 
-  }, commands.get('news'))
+  }, commands.get('news')?.desc)
 
-  .command('help', (ctx) => ctx.reply(`Список команд:\n\n${stringifiedCommands}`), commands.get('help'))
+  .command('help', (ctx) => ctx.reply(`Список команд:\n\n${stringifiedCommands}`), commands.get('help')?.desc)
 
-  .command('ping', (ctx) => ctx.reply('pong'), commands.get('ping'));
+  .command('ping', (ctx) => ctx.reply('pong'), commands.get('ping')?.desc);
 
 for (const type of Object.keys(ReleaseTypes)) {
   if (Number(type) >= 0) {
@@ -52,10 +52,10 @@ for (const type of Object.keys(ReleaseTypes)) {
   bot.command(type.toLowerCase(), async (ctx) => {
     const
       releaseType = ReleaseTypes[type],
-      res = await getClosestReleases(releaseType).then((res) => res[releaseType]);
+      res = await getClosestReleases(releaseType).then((res) => res?.['releaseType']);
 
     if (res == null) {
-      return ctx.reply('Упс... Кажется, что-то пошло не так :(');
+      return ctx.reply('Упс... Кажется, что-то пошло не так :(\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
     }
 
     if (res.attachments?.picture == null) {
@@ -70,10 +70,14 @@ for (const type of Object.keys(ReleaseTypes)) {
       parse_mode: 'HTML'
     }).catch((err) => globalLogger.error(`${releaseType}:replyWithPhoto`, err));
 
-  }, commands.get(type.toLowerCase()));
+  }, commands.get(type.toLowerCase())?.desc);
 }
 
 globalLogger.debug(`App is running in ${process.env.ENVIRONMENT} mode.`);
 
-bot.onError((err) => globalLogger.error('onError', err));
+bot.onError((err, ctx) => {
+  globalLogger.error('onError', err);
+  ctx.reply('Упс... Кажется, что-то пошло не так :(\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
+});
+
 bot.start();
