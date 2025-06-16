@@ -1,36 +1,42 @@
-import Requester, { Decoders } from 'core/requester';
-import { RawResponse } from 'models/linker/interface';
+import {request} from 'core/requester';
+import type {Decoder, GetParams} from 'core/requester';
 
-export * from 'models/linker/interface';
+import {RawResponse} from './interface';
 
-/**
- * Движок запросов: возвращает ссылки на треки/альбомы из яндекс музыки
- */
-export class YMLinker extends Requester {
-	static override decoders: Decoders = <Decoders>{
-		...Requester.decoders,
-		get: [
-			...Requester.decoders.get,
+export * from './interface';
 
-			(response: RawResponse, params) => {
-				const type = params.query?.type ?? 'all';
+const YM_BASE_URL = 'https://music.yandex.ru';
+const YM_BASE_QUERY: Dictionary<string> = {lang: 'ru'};
 
-				if (response[type]?.items[0]?.id) {
-					const suggestType = {
-						albums: 'album',
-						tracks: 'track',
-						all: 'best'
-					};
+const yandexMusicLinkDecoder: Decoder<RawResponse, string> = (response, {query}) => {
+	const type = query?.type ?? 'all';
+	const searchText = query?.text ?? '';
+	const ymItemId = response[type]?.items?.[0].id;
 
-					return `https://music.yandex.ru/${suggestType[type]}/${response[type].items[0].id}`;
-				}
+	if (ymItemId) {
+		const suggestType: Record<string, string> = {
+			albums: 'album',
+			tracks: 'track',
+			all: 'best'
+		};
 
-				return new URL(`https://music.yandex.ru/search?text=${params.query?.text}`).toString();
-			}
-		]
-	};
+		const ymType = suggestType[type];
 
-	override readonly baseUrl: string = 'https://music.yandex.ru/handlers/music-search.jsx';
+		if (ymType) {
+			return `${YM_BASE_URL}/${ymType}/${ymItemId}`;
+		}
+	}
 
-	override readonly baseQuery: Dictionary<string> = {lang: 'ru'};
-}
+	const searchUrl = new URL(`${YM_BASE_URL}/search`);
+	searchUrl.searchParams.set('text', searchText);
+
+	return searchUrl.toString();
+};
+
+export const getLink = async (params: GetParams): Promise<Nullable<string>> => request({
+	baseUrl: YM_BASE_URL,
+	path: 'handlers/music-search.jsx',
+	query: {...YM_BASE_QUERY, ...params.query},
+	decoders: [yandexMusicLinkDecoder as Decoder<unknown, string>],
+	cacheTTL: 1000 * 60 * 60,
+});

@@ -1,6 +1,6 @@
 import path from 'path';
-import { createLogger, format, transports } from 'winston';
-import type { Logger as WinstonLogger } from 'winston';
+import {createLogger, format, transports} from 'winston';
+import type {Logger as WinstonLogger} from 'winston';
 
 const
 	errorLogsFile = path.resolve('logs/error.log'),
@@ -63,8 +63,8 @@ export default class Logger {
 	}
 
 	/** {@link WinstonLogger.info} */
-  info(message: string, ...meta: any[]): void;
-  info(infoObject: object): void;
+	info(message: string, ...meta: any[]): void;
+	info(infoObject: object): void;
 
 	info(messageOrObject: string | object, ...meta: any[]): void {
 		if (typeof messageOrObject === 'string') {
@@ -76,8 +76,8 @@ export default class Logger {
 	}
 
 	/** {@link WinstonLogger.debug} */
-  debug(message: string, ...meta: any[]): void;
-  debug(infoObject: object): void;
+	debug(message: string, ...meta: any[]): void;
+	debug(infoObject: object): void;
 
 	debug(messageOrObject: string | object, ...meta: any[]): void {
 		if (typeof messageOrObject === 'string') {
@@ -89,8 +89,8 @@ export default class Logger {
 	}
 
 	/** {@link WinstonLogger.warn} */
-  warn(message: string, ...meta: any[]): void;
-  warn(infoObject: object): void;
+	warn(message: string, ...meta: any[]): void;
+	warn(infoObject: object): void;
 
 	warn(messageOrObject: string | object, ...meta: any[]): void {
 		if (typeof messageOrObject === 'string') {
@@ -102,8 +102,8 @@ export default class Logger {
 	}
 
 	/** {@link WinstonLogger.error} */
-  error(message: string, ...meta: any[]): void;
-  error(infoObject: object): void;
+	error(message: string, ...meta: any[]): void;
+	error(infoObject: object): void;
 
 	error(messageOrObject: string | object, ...meta: any[]): void {
 		if (typeof messageOrObject === 'string') {

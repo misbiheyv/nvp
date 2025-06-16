@@ -1,11 +1,13 @@
-import { Context, MiddlewareFn, Telegraf } from 'telegraf';
-import type { BotCommand, Update } from 'telegraf/typings/core/types/typegram';
-import { globalLogger } from 'core/logger';
+import {Context, MiddlewareFn, Telegraf} from 'telegraf';
+import type {BotCommand, Update} from 'telegraf/typings/core/types/typegram';
+import {globalLogger} from 'core/logger';
+
+export * from './commands';
 
 /**
  * Класс реализует обертку для взаимодействия с телеграм ботом
  */
-export default class TgBot {
+export class TgBot {
 	/**
 	 * Инстанс бота
 	 */

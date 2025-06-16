@@ -1,10 +1,9 @@
 import 'dotenv/config';
-import TgBot from 'tg-bot';
-import { getClosestReleases } from 'helpers';
-import { commands, stringifiedCommands } from 'core/helpers';
-import { scheduleTasks } from 'core/scheduler';
-import { ReleaseTypes } from 'models/releases';
-import { globalLogger } from 'core/logger';
+import {CronCommand, CronJob} from 'cron';
+
+import {TgBot, commands, stringifiedCommands, stringifiedBaseCommands} from 'tg-bot';
+import {globalLogger as gl} from 'core/logger';
+import {getLatestsReleases, ReleaseTypes} from 'models/releases';
 
 const token = process.env.ENVIRONMENT === 'PROD' ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_TOKEN;
 
@@ -14,12 +13,21 @@ if (token == null) {
 
 const bot = new TgBot(token)
   .onStart((ctx) => {
-    scheduleTasks(ctx);
     ctx.reply(`Добро пожаловать! Список команд:\n\n${stringifiedCommands}`);
+
+    try {
+      const scheduleJob = (pattern: string, cb: CronCommand) => new CronJob(pattern, cb, null, true, 'Europe/Moscow');
+
+      scheduleJob('0 19 * * THU', () => ctx.sendMessage(`Дропы через 5 часов:\n${stringifiedBaseCommands}`));
+      scheduleJob('0 0 * * FRI', () => ctx.sendMessage(`Чекай дропы:\n${stringifiedBaseCommands}`));
+      scheduleJob('0 8 * * FRI', () => ctx.sendMessage(`Чекай дропы:\n${stringifiedBaseCommands}`));
+    } catch (error) {
+      gl.error('Scheduler Registration Error', {error});
+    }
   })
 
   .command('news', async (ctx) => {
-    const res = await getClosestReleases(ReleaseTypes.ALL);
+    const res = await getLatestsReleases(ReleaseTypes.ALL);
 
     if (res == null) {
       return ctx.reply('Упс... Кажется, что-то пошло не так:(\n\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
@@ -28,19 +36,24 @@ const bot = new TgBot(token)
     const promises: Promise<any>[] = [];
 
     for (const data of Object.values(res)) {
-      if (data.attachments?.picture == null) {
-        promises.push(
-          ctx.replyWithHTML(data.text).catch((err) => globalLogger.error('news:replyWithHTML', err))
-        );
-        continue;
-      }
+      // if (data.attachments?.picture) {
+      //   promises.push(
+      //     ctx.replyWithPhoto({url: data.attachments.picture}, {
+      //       caption: data.text,
+      //       // eslint-disable-next-line camelcase
+      //       parse_mode: 'HTML'
+      //     }).catch((err) => {
+      //       gl.error('news:replyWithPhoto', err);
+
+      //       return ctx.replyWithHTML(data.text).catch((err) => gl.error('news:replyWithHTML', err));
+      //     })
+      //   );
+
+      //   continue;
+      // }
 
       promises.push(
-        ctx.replyWithPhoto({url: data.attachments.picture}, {
-          caption: data.text,
-          // eslint-disable-next-line camelcase
-          parse_mode: 'HTML'
-        }).catch((err) => globalLogger.error('news:replyWithPhoto', err))
+        ctx.replyWithHTML(data.text).catch((err) => gl.error('news:replyWithHTML', err))
       );
     }
 
@@ -60,14 +73,14 @@ for (const type of Object.keys(ReleaseTypes)) {
   bot.command(type.toLowerCase(), async (ctx) => {
     const
       releaseType = ReleaseTypes[type],
-      res = await getClosestReleases(releaseType).then((res) => res?.[releaseType]);
+      res = await getLatestsReleases(releaseType).then((res) => res?.[releaseType]);
 
     if (res == null) {
       return ctx.reply('Упс... Кажется, что-то пошло не так:(\n\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
     }
 
     if (res.attachments?.picture == null) {
-      return ctx.replyWithHTML(res.text).catch((err) => globalLogger.error(`${releaseType}:replyWithHTML`, err));
+      return ctx.replyWithHTML(res.text).catch((err) => gl.error(`${releaseType}:replyWithHTML`, err));
     }
 
     return ctx.replyWithPhoto({url: res.attachments.picture}, {
@@ -75,15 +88,15 @@ for (const type of Object.keys(ReleaseTypes)) {
 
       // eslint-disable-next-line camelcase
       parse_mode: 'HTML'
-    }).catch((err) => globalLogger.error(`${releaseType}:replyWithPhoto`, err));
+    }).catch((err) => gl.error(`${releaseType}:replyWithPhoto`, err));
 
   }, commands.get(type.toLowerCase())?.desc);
 }
 
-globalLogger.debug(`App is running in ${process.env.ENVIRONMENT} mode.`);
+gl.debug(`App is running in ${process.env.ENVIRONMENT} mode.`);
 
 bot.onError((err, ctx) => {
-  globalLogger.error('onError', err);
+  gl.error('onError', err);
   ctx.reply('Упс... Кажется, что-то пошло не так:(\n\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
 });
 

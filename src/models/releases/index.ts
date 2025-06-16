@@ -1,29 +1,57 @@
 import * as vkApi from 'vk-io';
-import Requester, { Decoders } from 'core/requester';
-import { normalizeResponse, reduceToLists, extractResponse } from 'models/releases/decoders';
-import { globalLogger } from 'core/logger';
+import {globalLogger} from 'core/logger';
+import type {GetParams} from 'core/requester';
+import {TtlCache} from 'core/cache';
 
-export { releaseSegmentIdentifiers } from 'models/releases/helpers';
-export * from 'models/releases/interface';
+import {ReleaseTypes, DecodedResponse} from './interface';
+import {normalizeResponse} from './decoders';
 
+export {releaseSegmentIdentifiers} from './helpers';
+export * from './interface';
 
-/**
- * Движок запросов: возвращает список релизов
- */
-export class ReleasesList extends Requester {
-	static override decoders: Decoders = <Decoders>{
-		...Requester.decoders,
-		get: [...Requester.decoders.get, normalizeResponse, extractResponse, reduceToLists]
-	};
+const VK_PROCEDURE_NAME = 'getLastFridays';
+const VK_TOKEN = process.env.VK_TOKEN;
+const CACHE_TTL = 1000 * 60 * 60;
 
-	override requestEngine() {
-		return {
-			get: (procedureName: string, params: {query: Dictionary<string>}) => {
-				globalLogger.info('request', {procedureName, params});
-				return new vkApi.VK({ token: process.env.VK_TOKEN! }).api.procedure(procedureName, params.query);
-			}
-		};
-	}
+if (!VK_TOKEN) {
+  throw new Error(`VK_TOKEN is not defined in the env`);
+}
 
-	override baseUrl: string = 'getPostsInTimeRange';
+const cache = new TtlCache();
+const vk = new vkApi.VK({token: VK_TOKEN});
+
+export async function getReleases(params: GetParams): Promise<Nullable<DecodedResponse>> {
+  try {
+    const cacheKey = `${VK_PROCEDURE_NAME}::${JSON.stringify(params)}`;
+    const fromCache = cache.get(cacheKey);
+
+    if (fromCache) {
+      return fromCache;
+    }
+
+    const rawResponse: any = await vk.api.procedure(VK_PROCEDURE_NAME, params.query);
+    const response = await normalizeResponse(rawResponse, params);
+
+    cache.set(cacheKey, response, CACHE_TTL);
+    return response;
+
+  } catch (error) {
+    globalLogger.error('ReleasesList: Error during VK API call', {
+      error,
+      procedureName: VK_PROCEDURE_NAME,
+      query: params.query
+    });
+
+    return null;
+  }
+}
+
+export async function getLatestsReleases(type: ReleaseTypes): Promise<Nullable<DecodedResponse>> {
+  return getReleases({
+    query: {
+      count: 1,
+      links: true,
+      type
+    }
+  });
 }
