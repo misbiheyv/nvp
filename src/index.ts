@@ -18,7 +18,7 @@ const bot = new TgBot(TELEGRAM_TOKEN)
     ctx.reply(`Добро пожаловать!\n\nСписок команд:\n${stringifiedCommands}\n\n${WARNING_MSG}`);
 
     try {
-      const scheduleJob = (pattern: string, cb: CronCommand) => new CronJob(pattern, cb, null, true, 'Europe/Moscow');
+      const scheduleJob = (pattern: string, cb: CronCommand<unknown>) => new CronJob(pattern, cb, null, true, 'Europe/Moscow');
 
       scheduleJob('0 19 * * THU', () => ctx.sendMessage(`Дропы через 5 часов:\n${stringifiedBaseCommands}`));
       scheduleJob('0 0 * * FRI', () => ctx.sendMessage(`Чекай дропы:\n${stringifiedBaseCommands}`));

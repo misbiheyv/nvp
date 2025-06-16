@@ -30,13 +30,11 @@ export default class Logger {
 				format.simple()
 			),
 
-			transports: [
-				new transports.File({filename: errorLogsFile, level: 'error'}),
-				new transports.File({filename: baseLogsFile})
-			]
+			transports: [new transports.File({filename: errorLogsFile, level: 'error'})]
 		});
 
 		if (process.env.ENVIRONMENT === 'DEV') {
+			this.logger.add(new transports.File({filename: baseLogsFile}));
 			this.logger.add(new transports.Console({
 				level: 'debug',
 				format: format.combine(

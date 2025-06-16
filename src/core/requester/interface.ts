@@ -9,8 +9,10 @@ export interface PostParams {
 	body: Dictionary;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface PutParams extends PostParams {}
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface DeleteParams extends PostParams {}
 
 export type ParamsMap = {
