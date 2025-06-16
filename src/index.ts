@@ -5,7 +5,7 @@ import {TgBot, commands, stringifiedCommands, stringifiedBaseCommands} from 'tg-
 import {globalLogger as gl} from 'core/logger';
 import {getLatestsReleases, ReleaseTypes} from 'models/releases';
 
-const TELEGRAM_TOKEN = process.env.ENVIRONMENT === 'PROD' ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_TOKEN;
+const TELEGRAM_TOKEN = process.env.NODE_ENV === 'production' ? process.env.TELEGRAM_TOKEN : process.env.TELEGRAM_DEV_TOKEN;
 // eslint-disable-next-line max-len
 const WARNING_MSG = 'PS. Это не официальный NVP бот, я просто паршу их посты. Так что поддержите ребят и подпишитесь на канал "Новинки в пятницу" в ТГ или группу ВК!';
 
@@ -95,7 +95,7 @@ for (const type of Object.keys(ReleaseTypes)) {
   }, commands.get(type.toLowerCase())?.desc);
 }
 
-gl.debug(`App is running in ${process.env.ENVIRONMENT} mode.`);
+gl.debug(`App is running in ${process.env.NODE_ENV || 'development'} mode.`);
 
 bot.onError((err, ctx) => {
   gl.error('onError', err);

@@ -4,9 +4,8 @@
   "description": "Music Releases Notifier",
   "main": "./dist/index.js",
   "scripts": {
-    "dev": "ENVIRONMENT=DEV node ./dist/index.js",
-    "start": "ENVIRONMENT=PROD node ./dist/index.js",
-    "dev:watch": "nodemon ./dist/index.js",
+    "start": "node ./dist/index.js",
+    "start:watch": "nodemon ./dist/index.js",
     "build:clear": "rm -rf dist",
     "build": "npm run build:clear && tsc",
     "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",

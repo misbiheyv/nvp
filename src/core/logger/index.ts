@@ -33,7 +33,7 @@ export default class Logger {
 			transports: [new transports.File({filename: errorLogsFile, level: 'error'})]
 		});
 
-		if (process.env.ENVIRONMENT === 'DEV') {
+		if (process.env.NODE_ENV !== 'production') {
 			this.logger.add(new transports.File({filename: baseLogsFile}));
 			this.logger.add(new transports.Console({
 				level: 'debug',
