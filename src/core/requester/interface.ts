@@ -9,9 +9,9 @@ export interface PostParams {
 	body: Dictionary;
 }
 
-export interface PutParams extends PostParams{}
+export interface PutParams extends PostParams {}
 
-export interface DeleteParams extends PostParams{}
+export interface DeleteParams extends PostParams {}
 
 export type ParamsMap = {
 	get: GetParams;
@@ -30,10 +30,15 @@ export interface Decoder<I = unknown, O = unknown> {
 	(data: I, params: RequestParams): CanPromise<O>;
 }
 
-export type Decoders = Record<RequestMethod, Iterable<Decoder>>;
+export interface RequestOptions {
+	path?: string;
+	baseUrl?: string;
+	query?: Dictionary<any>;
+	decoders?: Decoder[];
+	method?: 'GET';
 
-export interface IRequester {
-	requestEngine(): {
-		[K in RequestMethod]?: <R = unknown>(url: string, params: ParamsMap[K]) => CanPromise<R>;
-	}
+	/**
+	 * Время жизни кэша в миллисекундах (по дефолту без кэша)
+	 */
+	cacheTTL?: number;
 }

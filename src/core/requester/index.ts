@@ -1,70 +1,81 @@
-import type { IRequester, GetParams, Decoders } from 'core/requester/interface';
+import {globalLogger as gl} from 'core/logger';
+import {RequestOptions} from './interface';
+import {TtlCache} from 'core/cache';
 
-export * from 'core/requester/interface';
+export * from './interface';
 
-/**
- * Базовый движок для запросов
- */
-export default class Requester implements IRequester {
-	/**
-	 * Декодеры применяются для обработки ответа
-	 */
-	static readonly decoders: Decoders = {
-		get: [],
-		post: [],
-		put: [],
-		delete: []
-	};
+const cache = new TtlCache();
 
-	/**
-	 * Базовые query параметры, будут добавлены к каждому запросу
-	 */
-	readonly baseQuery: Dictionary = {};
+function buildQueryString(params: Dictionary<any>): string {
+	return Object.entries(params)
+		.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+		.join('&');
+}
 
-	/**
-	 * Url для каждого запроса
-	 */
-	readonly baseUrl?: string;
+export async function request<T = unknown>(options: RequestOptions): Promise<Nullable<T>> {
+	const {
+		path = '',
+		baseUrl = '',
+		query = {},
+		decoders = [],
+		method = 'GET',
+		cacheTTL = 0,
+	} = options;
 
-	/**
-	 * Отправляет GET запрос с переданными параметрами
-	 *
-	 * @param urlOrParams
-	 * @param [params]
-	 */
-	async get<T = unknown>(params: GetParams): Promise<Nullable<T>>;
-	async get<T = unknown>(url: string | GetParams, params?: GetParams): Promise<Nullable<T>>;
+	const queryString = buildQueryString(query);
+	const url = `${baseUrl.replace(/\/$/, '')}/${path.replace(/^\//, '')}${queryString && `?${queryString}`}`;
+	const fromCache = cache.get<T>(url);
 
-	async get<T = unknown>(urlOrParams: string | GetParams, params?: GetParams): Promise<Nullable<T>> {
-		const
-			url = typeof urlOrParams === 'string' ? urlOrParams : this.baseUrl,
-			p = typeof urlOrParams === 'string' ? params : urlOrParams,
-			reqParams = {query: {...this.baseQuery, ...p?.query}};
+	if (fromCache) {
+		return fromCache;
+	}
 
-		if (!url) {
+	if (!url.startsWith('http')) {
+		gl.error('fetchWithDecoders: Invalid URL constructed', {url});
+		return null;
+	}
+
+	try {
+		const response = await fetch(url, {method});
+
+		if (!response.ok) {
+			const text = await response.text().catch(() => undefined);
+
+			gl.error(`fetchWithDecoders: HTTP error`, {
+				status: response.status,
+				statusText: response.statusText,
+				url,
+				text
+			});
+
 			return null;
 		}
 
-		let
-			res = await this.requestEngine().get(url, reqParams);
+		let data: any = await response.json();
 
-		for (const decoder of this.constructor['decoders']['get'] ?? []) {
-			res = await decoder(res, reqParams);
+		for (const decoder of decoders) {
+			try {
+				data = await decoder(data, {query});
+
+			} catch (error) {
+				gl.error('fetchWithDecoders: Error during decoding', {
+					decoderName: decoder.name || 'anonymous',
+					error,
+					intermediateData: data
+				});
+
+				return null;
+			}
 		}
 
-		return res;
-	}
+		if (cacheTTL) {
+			cache.set(url, data, cacheTTL);
+		}
 
-	/**
-	 * Возвращает, движок запросов
-	 */
-	requestEngine() {
-		return {
-			get: (url: string, params: GetParams): Promise<any> => {
-				const query = Object.entries(params.query).reduce((acc, k, v) => acc += `${k}=${v}&`, '');
+		return data as T;
 
-				return fetch(`${url}?${query}`);
-			}
-		};
+	} catch (error) {
+		gl.error('fetchWithDecoders: Network or other fetch error', {error, url});
+		return null;
 	}
 }

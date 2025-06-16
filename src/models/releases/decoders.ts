@@ -1,9 +1,71 @@
-import { globalLogger } from 'core/logger';
-import type { Decoder } from 'core/requester';
-import { YMLinker } from 'models/linker';
-import { mapReleaseTypeToYmType } from 'models/helpers';
-import { releaseSegmentIdentifiers, releaseSegmentPreview, getPictureURL } from 'models/releases/helpers';
-import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } from 'models/releases/interface';
+import {globalLogger} from 'core/logger';
+import type {Decoder} from 'core/requester';
+
+
+import {releaseSegmentPreview, getPictureURL} from './helpers';
+import {RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse} from './interface';
+
+const MATCHING_PATTERN = '#musicfridayo_o';
+
+/**
+ * Добавляет в ответ ссылки на YM
+ *
+ * @param data
+ * @param params
+ */
+// const addYMLinksResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWithMeta> = async (data, {query}) => {
+// 	const promises: Promise<any>[] = [];
+
+// 	if (!query?.links) {
+// 		return data;
+// 	}
+
+// 	for (const segment of Object.values(data)) {
+// 		for (const el of segment.list) {
+// 			if (el.links == null) {
+// 				el.links = {};
+// 			}
+
+// 			promises.push(
+// 				getLink({
+// 					query: {
+// 						text: el.title,
+// 						type: 'all'
+// 					}
+// 				}).then((link) => el.links!.ym = link)
+// 			);
+// 		}
+// 	}
+
+// 	return Promise.allSettled(promises).then(() => {
+// 		globalLogger.info('decoderResult', {decoder: 'extractResponse', empty: Object.keys(data).length === 0});
+// 		return data;
+// 	});
+// };
+
+/**
+ * Сворачивает ответ в список
+ * @param data
+ */
+const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) => {
+	const result = Object.entries(data).reduce((acc, [name, record]) => {
+		const segment = <ReleaseTypes>name;
+
+		acc[segment] = {
+			text: record.list.reduce(
+				(acc, line) => acc?.concat(`\n${line.links?.ym == null ? line.title : `<a href="${line.links.ym}">${line.title}</a>`}`),
+				releaseSegmentPreview.get(segment) ?? ''
+			),
+
+			attachments: record.attachments
+		};
+
+		return acc;
+	}, <DecodedResponse>{});
+
+	globalLogger.info('decoderResult', {decoder: 'reduceToLists', empty: Object.keys(result).length === 0});
+	return result;
+};
 
 /**
  * Декодер: приводит ответ к нормализованному виду
@@ -11,121 +73,34 @@ import { RawResponse, DecodedResponseWithMeta, ReleaseTypes, DecodedResponse } f
  * @param list
  * @param params
  */
-export const normalizeResponse: Decoder<RawResponse, DecodedResponseWithMeta> = (response, {query}) => {
-	const res = response.response.filter(el => el.text.includes('#musicfridayo_o@novinkifriday'));
+export const normalizeResponse: Decoder<RawResponse, DecodedResponse> = async (response, params) => {
+	const res = response.response.items.filter(el => el.text.includes(MATCHING_PATTERN));
 
-	if (res.length === 0) {
+	if (!res || res.length === 0) {
 		globalLogger.info('decoderResult', {decoder: 'normalizeResponse', empty: true});
 		return {};
 	}
 
 	const
 		list = res[0].text.split('\n'),
-		segments = [...releaseSegmentIdentifiers.entries()],
 		result: DecodedResponseWithMeta = {},
-		queryType = query?.type;
+		type = ReleaseTypes.ALL,
+		picture = getPictureURL(type, response);
 
-	let
-		type: Nullable<ReleaseTypes>;
+	for (const rawLine of list) {
+		const line = rawLine.trim();
 
-	for (const line of list) {
-		if (line.trim().length === 0) {
-			type = null;
-			continue;
-		}
-
-		const key = segments.filter(([key, title]) => {
-			if (queryType != null && queryType !== ReleaseTypes.ALL && key !== queryType) {
-				return false;
-			}
-
-			return title != null && line.includes(title);
-		})[0]?.[0];
-
-		if (key != null) {
-			type = key;
-			continue;
-		}
-
-		if (!type) {
+		if (line.length === 0) {
 			continue;
 		}
 
 		if (!result[type]) {
-			result[type] = [];
+			result[type] = {list: [], attachments: {picture}};
 		}
 
-		result[type]?.push({title: line.trim(), type});
+		result[type].list.push({title: line, type});
 	}
 
 	globalLogger.info('decoderResult', {decoder: 'normalizeResponse', empty: Object.keys(result).length === 0});
-	return result;
-};
-
-/**
- * Декодер: обогащает ответ дополнительными данными
- *
- * @param data
- * @param params
- */
-export const extractResponse: Decoder<DecodedResponseWithMeta, DecodedResponseWithMeta> = async (data, {query}) => {
-	const
-		linker = new YMLinker(),
-		promises: Promise<any>[] = [];
-
-	if (!query?.links) {
-		globalLogger.info('decoderResult', {decoder: 'extractResponse', empty: Object.keys(data).length === 0});
-		return data;
-	}
-
-	for (const segment of Object.values(data)) {
-		for (const el of segment) {
-			if (el.links == null) {
-				el.links = {};
-			}
-
-			promises.push(
-				linker.get<string>({
-					query: {
-						text: el.title,
-						type: mapReleaseTypeToYmType(el.type)
-					}
-				}).then((link) => el.links!.ym = link)
-			);
-		}
-	}
-
-	return Promise.allSettled(promises).then(() => {
-		globalLogger.info('decoderResult', {decoder: 'extractResponse', empty: Object.keys(data).length === 0});
-
-		return data;
-	});
-};
-
-/**
- * Декодер: сворачивает ответ в список
- * @param data
- */
-export const reduceToLists: Decoder<DecodedResponseWithMeta, DecodedResponse> = async (data) => {
-	const result = Object.entries(data).reduce((acc, [name, list]) => {
-		const
-			segment = <ReleaseTypes>name;
-
-		acc[segment] = {
-			text: list.reduce(
-				(acc, line) => acc?.concat(`\n${line.links?.ym == null ? line.title : `<a href="${line.links.ym}">${line.title}</a>`}`),
-				releaseSegmentPreview.get(segment) ?? ''
-			),
-
-			attachments: {
-				picture: getPictureURL(segment)
-			}
-		};
-
-		return acc;
-	}, <DecodedResponse>{});
-
-	globalLogger.info('decoderResult', {decoder: 'reduceToLists', empty: Object.keys(result).length === 0});
-
-	return result;
+	return reduceToLists(result, params);
 };
