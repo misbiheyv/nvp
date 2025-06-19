@@ -20,6 +20,8 @@ export class TgBot {
 
 	constructor(token: string) {
 		this.bot = new Telegraf(token);
+		this.bot.hears('ping', (ctx) => ctx.reply('pong'));
+		this.bot.hears('Ping', (ctx) => ctx.reply('Pong'));
 	}
 
 	/**

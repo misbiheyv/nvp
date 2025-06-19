@@ -21,11 +21,16 @@ export const releaseSegmentPreview = new Map([
  * @param type
  */
 export function getPictureURL(type: ReleaseTypes, response: RawResponse) {
-	if (process.env.S3_BUCKET_URL) {
-		return `${process.env.S3_BUCKET_URL}/segment-pics/${type}.jpg`;
-	}
+	try {
+		if (process.env.S3_BUCKET_URL) {
+			return `${process.env.S3_BUCKET_URL}/segment-pics/${type}.jpg`;
+		}
 
-	return response.response.items[0].attachments
-		.filter((attachment) => attachment.type === 'photo')[0].photo?.sizes
-		.find((size) => size.type === 'base')?.url;
+		return response.response.items[0].attachments
+			.filter((attachment) => attachment.type === 'photo')[0].photo?.sizes
+			.find((size) => size.type === 'base')?.url;
+
+	} catch {
+		return undefined;
+	}
 }

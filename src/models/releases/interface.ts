@@ -6,36 +6,9 @@ export enum ReleaseTypes {
 	// EN_SINGLES = 'en_singles'
 }
 
-export type DecodedResponseWithMeta = {
-	[key in ReleaseTypes]?: {
-		list: Array<{
-			title: string;
-
-			type: ReleaseTypes;
-
-			artist?: string;
-
-			links?: {
-				ym?: Nullable<string>
-			}
-
-		}>;
-
-		attachments?: {
-			picture?: string;
-		};
-	}
+export interface RequestParams {
+	query: Dictionary<any>;
 }
-
-export type DecodedResponse = {
-	[key in ReleaseTypes]?: {
-		text: string;
-
-		attachments?: {
-			picture?: string;
-		};
-	}
-};
 
 type VKPhotoAttachment = {
 	type: 'photo';
@@ -104,4 +77,35 @@ export type RawResponse = {
 		items: RawItem[];
 	};
 	errors: unknown[];
+};
+
+export type ResponseWithMeta = {
+	[key in ReleaseTypes]?: {
+		list: Array<{
+			title: string;
+
+			type: ReleaseTypes;
+
+			artist?: string;
+
+			links?: {
+				ym?: Nullable<string>
+			}
+
+		}>;
+
+		attachments?: {
+			picture?: string;
+		};
+	}
+}
+
+export type NormalizedResponse = {
+	[key in ReleaseTypes]?: {
+		text: string;
+
+		attachments?: {
+			picture?: string;
+		};
+	}
 };

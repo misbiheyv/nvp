@@ -1,10 +1,9 @@
 import * as vkApi from 'vk-io';
 import {globalLogger} from 'core/logger';
-import type {GetParams} from 'core/requester';
 import {TtlCache} from 'core/cache';
 
-import {ReleaseTypes, DecodedResponse} from './interface';
-import {normalizeResponse} from './decoders';
+import {ReleaseTypes, NormalizedResponse, RequestParams, RawResponse, ResponseWithMeta} from './interface';
+import {getPictureURL, releaseSegmentPreview} from './helpers';
 
 export {releaseSegmentIdentifiers} from './helpers';
 export * from './interface';
@@ -20,7 +19,7 @@ if (!VK_TOKEN) {
 const cache = new TtlCache();
 const vk = new vkApi.VK({token: VK_TOKEN});
 
-export async function getReleases(params: GetParams): Promise<Nullable<DecodedResponse>> {
+export async function getReleases(params: RequestParams): Promise<Nullable<NormalizedResponse>> {
   try {
     const cacheKey = `${VK_PROCEDURE_NAME}::${JSON.stringify(params)}`;
     const fromCache = cache.get(cacheKey);
@@ -29,14 +28,59 @@ export async function getReleases(params: GetParams): Promise<Nullable<DecodedRe
       return fromCache;
     }
 
-    const rawResponse: any = await vk.api.procedure(VK_PROCEDURE_NAME, params.query);
-    const response = await normalizeResponse(rawResponse, params);
+    const rawResponse: RawResponse = await vk.api.procedure(VK_PROCEDURE_NAME, params.query);
+    const [postItem] = rawResponse.response.items;
 
-    cache.set(cacheKey, response, CACHE_TTL);
-    return response;
+    if (!postItem) {
+      globalLogger.warn('getReleases: rawResponse is empty');
+      return {};
+    }
+
+    const type: ReleaseTypes = params.query.type ?? ReleaseTypes.ALL;
+    const picture = getPictureURL(type, rawResponse);
+    const responseWithMeta = postItem.text.split('\n').reduce<ResponseWithMeta>((temp, rawLine) => {
+      const line = rawLine.trim();
+
+      if (line.length > 0) {
+        if (!temp[type]) {
+          temp[type] = {list: [], attachments: {picture}};
+        }
+
+        temp[type].list.push({title: line, type});
+      }
+
+      return temp;
+    }, {});
+
+    if (!Object.keys(responseWithMeta).length) {
+      globalLogger.warn('getReleases: responseWithMeta is empty');
+    }
+
+    const normalizedResponse = Object.entries(responseWithMeta).reduce<NormalizedResponse>((acc, [type, record]) => {
+      const releaseType = <ReleaseTypes>type;
+
+      acc[releaseType] = {
+        text: record.list.reduce(
+          (text, line) => text?.concat(`${line.title}\n`),
+          releaseSegmentPreview.get(releaseType) ?? ''
+        ),
+
+        attachments: record.attachments
+      };
+
+      return acc;
+    }, {});
+
+    if (Object.keys(normalizedResponse).length) {
+      cache.set(cacheKey, normalizedResponse, CACHE_TTL);
+    } else {
+      globalLogger.warn('getReleases: normalizedResponse is empty');
+    }
+
+    return normalizedResponse;
 
   } catch (error) {
-    globalLogger.error('ReleasesList: Error during VK API call', {
+    globalLogger.error('getReleases: Unknown Error', {
       error,
       procedureName: VK_PROCEDURE_NAME,
       query: params.query
@@ -46,7 +90,7 @@ export async function getReleases(params: GetParams): Promise<Nullable<DecodedRe
   }
 }
 
-export async function getLatestsReleases(type: ReleaseTypes): Promise<Nullable<DecodedResponse>> {
+export async function getLatestsReleases(type: ReleaseTypes): Promise<Nullable<NormalizedResponse>> {
   return getReleases({
     query: {
       count: 1,
