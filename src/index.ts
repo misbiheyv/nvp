@@ -20,14 +20,27 @@ const bot = new TgBot(TELEGRAM_TOKEN)
     try {
       const scheduleJob = (pattern: string, cb: CronCommand<unknown>) => new CronJob(pattern, cb, null, true, 'Europe/Moscow');
 
-      scheduleJob('0 0 * * FRI', () => ctx.sendMessage('Проверяй что сегодня дропнулось!'));
-      scheduleJob('0 8 * * FRI', () => ctx.sendMessage('Проверяй что сегодня дропнулось!'));
+      const cronJob = async () => {
+        try {
+          const res = await getLatestsReleases(ReleaseTypes.ALL);
+
+          if (res) {
+            for (const data of Object.values(res)) {
+              ctx.replyWithHTML(`${data.text}\n\n${WARNING_MSG}`).catch((err) => globalLogger.error('news:replyWithHTML', err));
+            }
+          }
+        } catch (err) {
+          globalLogger.error('news:cronJob', err);
+        }
+      };
+
+      scheduleJob('0 0 * * FRI', cronJob);
+      scheduleJob('0 8 * * FRI', cronJob);
 
     } catch (error) {
       globalLogger.error('Schedulers Registration Error', {error});
     }
   })
-
   .command(lastNews.command, async (ctx) => {
     const res = await getLatestsReleases(ReleaseTypes.ALL);
 
