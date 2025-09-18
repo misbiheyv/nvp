@@ -1,5 +1,5 @@
 export class TtlCache {
-  protected store = new Map<string, {timeoutId: NodeJS.Timeout, value: any}>();
+  protected store = new Map<string, {timeoutId: NodeJS.Timeout; value: any}>();
 
   set(key: string, value: any, ttl: number): void {
     const prevValue = this.store.get(key);
@@ -10,7 +10,7 @@ export class TtlCache {
 
     this.store.set(key, {
       value,
-      timeoutId: setTimeout(() => this.store.delete(key), ttl)
+      timeoutId: setTimeout(() => this.store.delete(key), ttl),
     });
   }
 

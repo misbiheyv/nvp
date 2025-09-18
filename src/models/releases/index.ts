@@ -2,11 +2,11 @@ import * as vkApi from 'vk-io';
 import {globalLogger} from 'core/logger';
 import {TtlCache} from 'core/cache';
 
-import {ReleaseTypes, NormalizedResponse, RequestParams, RawResponse, ResponseWithMeta} from './interface';
+import {ReleaseTypes, NormalizedResponse, RequestParams, RawResponse, ResponseWithMeta} from './types';
 import {getPictureURL, releaseSegmentPreview} from './helpers';
 
 export {releaseSegmentIdentifiers} from './helpers';
-export * from './interface';
+export * from './types';
 
 const VK_PROCEDURE_NAME = 'getLastFridays';
 const VK_TOKEN = process.env.VK_TOKEN;
@@ -60,12 +60,9 @@ export async function getReleases(params: RequestParams): Promise<Nullable<Norma
       const releaseType = <ReleaseTypes>type;
 
       acc[releaseType] = {
-        text: record.list.reduce(
-          (text, line) => text?.concat(`${line.title}\n`),
-          releaseSegmentPreview.get(releaseType) ?? ''
-        ),
+        text: record.list.reduce((text, line) => text?.concat(`${line.title}\n`), releaseSegmentPreview.get(releaseType) ?? ''),
 
-        attachments: record.attachments
+        attachments: record.attachments,
       };
 
       return acc;
@@ -78,12 +75,11 @@ export async function getReleases(params: RequestParams): Promise<Nullable<Norma
     }
 
     return normalizedResponse;
-
   } catch (error) {
     globalLogger.error('getReleases: Unknown Error', {
       error,
       procedureName: VK_PROCEDURE_NAME,
-      query: params.query
+      query: params.query,
     });
 
     return null;
@@ -95,7 +91,7 @@ export async function getLatestsReleases(type: ReleaseTypes): Promise<Nullable<N
     query: {
       count: 1,
       links: true,
-      type
-    }
+      type,
+    },
   });
 }

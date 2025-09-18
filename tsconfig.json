@@ -1,28 +1,25 @@
 {
-	"files": ["src/index.ts"],
-	"compilerOptions": {
-		"baseUrl": "./",
-		"outDir": "dist",
-		"module": "CommonJS",
+  "files": ["src/index.ts"],
+  "compilerOptions": {
+    "baseUrl": "./",
+    "outDir": "dist",
+    "module": "CommonJS",
     "target": "esnext",
-		"downlevelIteration": true,
-		"moduleResolution": "node",
-		"esModuleInterop": true,
-		"allowJs": true,
-		"importHelpers": true,
-		"lib": ["dom", "esnext"],
-		"strictNullChecks": true,
-		"strictFunctionTypes": true,
-		"strictPropertyInitialization": true,
-		"strict": true,
-		"noImplicitAny": false,
-		"paths": {
-			"*": ["src/*"],
-			"logs/*": ["logs/*"],
-		}
-	},
-	"include": [
-		"src/**/*",
-		"index.d.ts"
-	]
+    "downlevelIteration": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "importHelpers": true,
+    "lib": ["dom", "esnext"],
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictPropertyInitialization": true,
+    "strict": true,
+    "noImplicitAny": false,
+    "paths": {
+      "*": ["src/*"],
+      "logs/*": ["logs/*"]
+    }
+  },
+  "include": ["src/**/*", "index.d.ts"]
 }

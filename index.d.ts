@@ -7,7 +7,7 @@ type CanPromise<T> = T | Promise<T>;
 type CanArray<T> = T | T[];
 
 interface Dictionary<T = unknown> {
-	[key: PropertyKey]: T;
+  [key: PropertyKey]: T;
 }
 
 type AnyFunc = (...args: any[]) => any;
