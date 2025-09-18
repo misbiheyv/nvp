@@ -3,7 +3,6 @@ import {openConnection} from './connection';
 import {runMigrations} from './migrations';
 import {Chat} from './models/chat';
 import {Settings} from './models/settings';
-import {IS_PROD} from 'utils';
 
 export type DbContext = {
   connection: DatabaseInstance;
@@ -14,7 +13,7 @@ export type DbContext = {
 let context: DbContext | null = null;
 
 const initDb = (): DbContext => {
-  const connection = openConnection({path: IS_PROD ? process.env.DATA_PATH : process.env.DATA_PATH_DEV});
+  const connection = openConnection({path: process.env.DATA_PATH});
   runMigrations(connection);
 
   const chats = new Chat(connection);

@@ -93,9 +93,9 @@ export default defineConfig([
       'use-isnan': ['error'],
       'valid-typeof': ['error'],
       'accessor-pairs': ['error'],
-      curly: ['error'],
+      'curly': ['error'],
       'dot-location': ['error', 'property'],
-      eqeqeq: ['error', 'allow-null'],
+      'eqeqeq': ['error', 'allow-null'],
       'guard-for-in': ['warn'],
       'no-else-return': ['error'],
       'no-empty-pattern': ['error'],
@@ -128,9 +128,9 @@ export default defineConfig([
       'no-useless-concat': ['error'],
       'no-useless-escape': ['error'],
       'no-with': ['error'],
-      radix: ['error', 'as-needed'],
+      'radix': ['error', 'as-needed'],
       'wrap-iife': ['error', 'inside'],
-      yoda: ['error'],
+      'yoda': ['error'],
       'no-delete-var': ['error'],
       'no-shadow-restricted-names': ['error'],
       'no-undef-init': ['error'],
@@ -139,7 +139,7 @@ export default defineConfig([
       'array-bracket-spacing': ['error'],
       'block-spacing': ['error'],
       'brace-style': ['error'],
-      camelcase: ['error'],
+      'camelcase': ['error'],
       'comma-spacing': ['error'],
       'comma-style': ['error'],
       'computed-property-spacing': ['error'],
@@ -170,7 +170,7 @@ export default defineConfig([
       'operator-linebreak': ['error', 'after'],
       'quote-props': ['error', 'consistent-as-needed'],
 
-      quotes: [
+      'quotes': [
         'error',
         'single',
         {
@@ -179,7 +179,7 @@ export default defineConfig([
         },
       ],
 
-      semi: ['error'],
+      'semi': ['error'],
       'semi-spacing': ['error'],
       'space-before-blocks': ['error'],
 

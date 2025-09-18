@@ -7,8 +7,6 @@ RUN mkdir -p ${BOT_DIR} /data \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR ${BOT_DIR}
 
-ENV DATA_PATH=/data/nvp.sqlite
-
 COPY . .
 RUN npm ci && npm run build
 

@@ -6,6 +6,10 @@
   "scripts": {
     "start": "node ./dist/index.js",
     "start:watch": "nodemon ./dist/index.js",
+    "start:docker": "docker compose up -d --build",
+    "stop:docker": "docker compose down",
+    "start:podman": "podman compose up -d --build",
+    "stop:podman": "podman compose down",
     "build:clear": "rm -rf dist",
     "build": "npm run build:clear && tsc",
     "build:watch": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",

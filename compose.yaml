@@ -5,8 +5,6 @@ services:
       dockerfile: Dockerfile
     image: nvp:latest
     environment:
-      NODE_ENV: production
-      TELEGRAM_TOKEN: ${TELEGRAM_TOKEN}
       DATA_PATH: /data/nvp.sqlite
     volumes:
       - nvp_data:/data

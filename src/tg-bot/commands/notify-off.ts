@@ -14,7 +14,7 @@ export const notifyOff: Command = {
       // eslint-disable-next-line camelcase
       settings.updateSettings(chatId, {is_notification_enabled: 0});
 
-      return ctx.reply('Уведомления выключены.');
+      return ctx.reply('Уведомления выключены');
     }
   },
 };

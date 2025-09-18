@@ -1,4 +1,5 @@
 import path from 'path';
+import {IS_PROD} from 'utils';
 import {createLogger, format, transports} from 'winston';
 import type {Logger as WinstonLogger} from 'winston';
 
@@ -27,7 +28,7 @@ export default class Logger {
       transports: [new transports.File({filename: errorLogsFile, level: 'error'})],
     });
 
-    if (process.env.NODE_ENV !== 'production') {
+    if (!IS_PROD) {
       this.logger.add(new transports.File({filename: baseLogsFile}));
       this.logger.add(
         new transports.Console({
