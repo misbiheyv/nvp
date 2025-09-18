@@ -37,21 +37,19 @@ const bot = new TgBot(TELEGRAM_TOKEN)
   })
   .onStart((ctx) => {
     ctx.reply(`Добро пожаловать!\n\nПосмотреть самые свежие релизы можно при помощи команды ${lastNews.command}\n\n${WARNING_MSG}`);
+  })
+  .onError((err, ctx) => {
+    globalLogger.error('onError', err);
+    ctx.reply('Упс... Кажется, что-то пошло не так:(\n\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
   });
 
-for (const command of commands) {
+commands.forEach((command) => {
   if (command.type === 'debug' && IS_PROD) {
-    continue;
+    return;
   }
 
   bot.command(command);
-}
-
-bot.onError((err, ctx) => {
-  globalLogger.error('onError', err);
-  ctx.reply('Упс... Кажется, что-то пошло не так:(\n\nЯ уже знаю об этом и скоро(но это не точно) все налажу');
 });
 
 bot.start();
-
 runNotifier(bot);
