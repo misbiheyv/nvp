@@ -18,6 +18,7 @@
     "email": "mishagorkovenko1103@gmail.com"
   },
   "dependencies": {
+    "better-sqlite3": "^11.10.0",
     "cron": "^4.3.1",
     "dotenv": "^16.5.0",
     "telegraf": "^4.16.3",
@@ -25,13 +26,14 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
-    "eslint": "^9.29.0",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.29.0",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^24.0.1",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
-    "@types/node": "^24.0.1",
     "concurrently": "^9.1.2",
+    "eslint": "^9.29.0",
     "nodemon": "^3.1.10",
     "tsc-alias": "^1.8.16",
     "tslib": "^2.8.1",
