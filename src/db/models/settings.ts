@@ -17,7 +17,7 @@ export class Settings {
   constructor(protected readonly db: DatabaseInstance) {
     this.stmtEnsureDefaults = db.prepare(
       `INSERT OR IGNORE INTO chat_settings (chat_id, is_notification_enabled, language, release_types, notify_hour_fri_msk)
-			 VALUES (?, 1, 'ru', 'ALL', 8)`
+			 VALUES (?, 1, 'ALL', 'ALL', 8)`
     );
 
     this.stmtGet = db.prepare(
