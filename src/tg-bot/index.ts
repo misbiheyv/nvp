@@ -1,6 +1,7 @@
 import {Context, MiddlewareFn, Telegraf} from 'telegraf';
 import type {BotCommand, Update} from 'telegraf/typings/core/types/typegram';
 import {globalLogger} from 'core/logger';
+import {Command} from './commands';
 
 export * from './commands';
 
@@ -8,79 +9,94 @@ export * from './commands';
  * Класс реализует обертку для взаимодействия с телеграм ботом
  */
 export class TgBot {
-	/**
-	 * Инстанс бота
-	 */
-	protected bot: Telegraf;
+  /**
+   * Инстанс бота
+   */
+  protected bot: Telegraf;
 
-	/**
-	 * Список зарегистрированных команд
-	 */
-	protected commands: Map<string, {cb: Parameters<typeof Telegraf.command>[1], description?: string}> = new Map();
+  /**
+   * Список зарегистрированных команд
+   */
+  protected commands: Set<Command> = new Set();
 
-	constructor(token: string) {
-		this.bot = new Telegraf(token);
-		this.bot.hears('ping', (ctx) => ctx.reply('pong'));
-		this.bot.hears('Ping', (ctx) => ctx.reply('Pong'));
-	}
+  constructor(token: string) {
+    this.bot = new Telegraf(token);
+    this.bot.hears('ping', (ctx) => ctx.reply('pong'));
+    this.bot.hears('Ping', (ctx) => ctx.reply('Pong'));
+  }
 
-	/**
-	 * Запускает бота
-	 */
-	start(): void {
-		try {
-			const descriptions: BotCommand[] = [];
+  /**
+   * Регистрирует middleware
+   */
+  use(mw: MiddlewareFn<any>): typeof this {
+    this.bot.use(mw);
+    return this;
+  }
 
-			for (const [command, {cb, description}] of this.commands.entries()) {
-				if (description) {
-					descriptions.push({command, description});
-				}
+  /**
+   * Запускает бота
+   */
+  start(): void {
+    try {
+      const descriptions: BotCommand[] = [];
 
-				this.bot.command(command, async (ctx) => {
-					globalLogger.info('commandCall', {
-						command,
-						id: ctx.chat.id
-					});
+      for (const {command, callback, description} of this.commands) {
+        if (description) {
+          descriptions.push({command, description});
+        }
 
-					// TODO: Нормально типизировать
-					await (<any>cb)(ctx);
+        this.bot.command(command, async (ctx) => {
+          globalLogger.info('commandCall', {
+            command,
+            id: ctx.chat.id,
+          });
 
-					globalLogger.info('commandEnd', {command, id: ctx.chat.id});
-				});
-			}
+          // TODO: Нормально типизировать
+          await (<any>callback)(ctx);
 
-			this.bot.telegram.setMyCommands(descriptions);
-			this.bot.launch();
+          globalLogger.info('commandEnd', {command, id: ctx.chat.id});
+        });
+      }
 
-			process.once('SIGINT', () => this.bot.stop('SIGINT'));
-			process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+      this.bot.telegram.setMyCommands(descriptions);
+      this.bot.launch();
 
-		} catch (err) {
-			console.error(err);
-		}
-	}
+      process.once('SIGINT', () => this.bot.stop('SIGINT'));
+      process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
-	/**
-	 * Регистрирует команду
-	 */
-	command(name: string, cb: Parameters<typeof Telegraf.command>[1], description?: string | undefined): typeof this {
-		this.commands.set(name, {cb, description});
-		return this;
-	}
+  /**
+   * Отправляет HTML-сообщение в указанный чат
+   */
+  sendHTML(chatId: number | string, html: string): Promise<void> {
+    // eslint-disable-next-line camelcase
+    return this.bot.telegram.sendMessage(chatId, html, {parse_mode: 'HTML'}).then(() => undefined);
+  }
 
-	/**
-	 * Регистрирует коллбэк, который отработает на старте приложения
-	 */
-	onStart(cb: MiddlewareFn<any>): typeof this {
-		this.bot.start(cb);
-		return this;
-	}
+  /**
+   * Регистрирует команду
+   */
+  command(command: Command): typeof this {
+    this.commands.add(command);
+    return this;
+  }
 
-	/**
-	 * Регистрирует обработчик ошибок
-	 */
-	onError(handler: (err: unknown, ctx: Context<Update>) => CanPromise<void>): typeof this {
-		this.bot.catch(handler);
-		return this;
-	}
+  /**
+   * Регистрирует коллбэк, который отработает на старте приложения
+   */
+  onStart(cb: MiddlewareFn<any>): typeof this {
+    this.bot.start(cb);
+    return this;
+  }
+
+  /**
+   * Регистрирует обработчик ошибок
+   */
+  onError(handler: (err: unknown, ctx: Context<Update>) => CanPromise<void>): typeof this {
+    this.bot.catch(handler);
+    return this;
+  }
 }
